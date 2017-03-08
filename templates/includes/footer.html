@@ -1,0 +1,7 @@
+{{ define "footer" }}
+  <div class="footer">
+     <p>&copy; 2016 Stuff To Be Done | <a href="/about">About</a> | {{if .isLoggedIn }}<a href="/book">app</a> | <a href="/logout">logout</a>{{ else }}<a href="/login">login</a>{{ end }}</p>
+  </div>
+</body>
+</html>
+{{ end }}

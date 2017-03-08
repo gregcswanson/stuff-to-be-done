@@ -1,0 +1,162 @@
+body {
+    background: #ddd;
+    padding: 0;
+    margin: 0;
+    font-family: 'Roboto', 'Noto', sans-serif;
+}
+
+h1 {
+    margin: 20px;
+}
+
+.header-title {
+    text-decoration: none;
+    color: white;
+}
+
+.header-title:hover{
+    color: #ddd;
+}
+
+.footer {
+    padding: 10px;
+    font-size: small;
+    color: #555;
+    text-align: center;
+}
+
+.clearfix:before, .clearfix:after {
+    content: " ";
+    display: table;
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+
+.teaser {
+    position: relative;
+}
+.teaser > iron-image {
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+div.tagline {
+    display: inline-block;
+    margin: 20px;
+    color:white;
+    -webkit-text-shadow: 0px 0px 12px #333333,0px 0px 11px #333333;
+    text-shadow: 0px 0px 12px #333333,0px 0px 11px #333333;
+}
+
+div.tagline h1 {
+    margin: 20px 0;
+}
+
+.teaser > registration-card {
+    margin: 30px 30px -15px 30px;
+    float: right;
+}
+
+h3.section {
+    padding: 20px 10px;
+    margin: 0;
+}
+
+.features {
+    padding-bottom: 20px;
+}
+
+.value-propositions {
+    padding: 0;
+    text-align: center;
+}
+
+.value-propositions > .value-proposition {
+    width: 32%;
+    display: inline-block;
+}
+.value-propositions > .value-proposition > paper-material {
+    background-color: white;
+    margin: 10px;
+    padding: 20px;
+}
+
+@media (max-width: 800px) {
+    .value-propositions > .value-proposition {
+        width: 100%;
+        display: inline-block;
+    }
+}
+
+
+.pricing {
+    background-color: white;
+    padding-bottom: 20px;    
+}
+
+.pricing paper-button {
+    background-color: #aaa;
+    color: white !important;
+}
+
+.prices {
+    vertical-align: middle;
+}
+
+.pricing .price {
+    float: left;
+}
+
+.pricing .price paper-material {
+    background-color: white;
+    margin: 10px;
+    padding: 20px;
+}
+
+.pricing .pricing-1 {
+    width: 25%;
+}
+
+.pricing .pricing-1 paper-material{
+    background-color: #eee;
+}
+
+.pricing .pricing-2 {
+    width: 48%;
+}
+
+.pricing .pricing-2 paper-material {
+    padding-bottom: 40px;
+    margin-top: 0;
+}
+
+.pricing .pricing-3 {
+    width: 25%;
+}
+
+.pricing .pricing-3 paper-material{
+    background-color: #eee;
+}
+
+.pricing .call-to-action {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.registrations paper-material {
+    margin: 20px;
+    background: white;
+}
+
+.registrations paper-material > p {
+    padding: 10px;
+    margin: 0;
+    border-bottom: 1px dashed #ccc;
+}

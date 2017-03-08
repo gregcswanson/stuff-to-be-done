@@ -1,0 +1,69 @@
+{{ template "header" . }}
+<div class="teaser clearfix" style="min-height: 100px;">
+
+    <iron-image 
+            width="100%" height="100%" sizing="cover" fade preload 
+            style="position:absolute; top:0px; bottom:0px; left: 0px; right: 0px; background-color: lightgray;"
+            placeholder="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAKEAIAAABWNVSUAAAB+klEQVR4nADqARX+BJ9ljtyecfeS+xDy4gOdBsT/s+B64T/ip/b29kb6gR+KKAAlJRCqERgUnBcXGHcQAQQIbgb4CcwXHxoXFobn6OlJ4UIWwRDVFNgF1BwtBtTB/MsLyu/jaubz7SuU9Ir3e5gDTmREDE/fAQEAVQJj79bx0/T84y/eluXP/4AALP8d6TnxwupjGDAWtBILSeFHFUCwBAU5CSUEfAWmCsQGQwdPBfcIrQEL/pgCnNyF1vvhJues5N3nVgqlDe8MDHlFcvGGaQL+/v7+/v7wVe3f8LPhRt6A3RrVa89exGn4jfHQ6hb19fWl8WoCY/UI9zPqsduQ3FUE1gfPVtSX7e7u6++01trhRNiM3eLu1uTkD+TqC+YTM508lDmi+Cz7Jv2FKAIa8S86BPJY8ZLvLBMSEhUSEjuZE1E6hjIs/MAzNPSk+L31MviS+2D1UO+K8mHrZgOvCRj/mgGrPJVvrMsI0wSYBQUDAwMDAwMGoQi+CAj39/hQ9jG06bjUsyzfrua431fdreQH4uIC2XTc6tkVF0wb3xlUA9MKhAdC1tbWL9QQsxmx+7Gy8u3nUfA8C9H68QyjHuUOWx3xA1reZG9kCSRZKe0lYqxCokOr97wozSO96QW1/VMG0hn8EeQYnwu/CzQIYwY3A6kEBAEAAP//F1z2eHIDDrMAAAAASUVORK5CYII="
+            src="banner.jpg"></iron-image>
+
+    <div class="tagline">
+        <h1>Tag line</h1>
+        <p>Value statement that explains the site in a short sentence</p>
+    </div>
+
+    {{ if .showregistration }}
+    <registration-card></registration-card>
+    {{ end }}
+</div>
+
+<div class="features">
+
+    <h3 class="section">Features</h3>
+
+    <div class="value-propositions clearfix">
+        <div class="value-proposition">
+        <paper-material elevation="1">
+            <p>One</p>
+        </paper-material>
+        </div>
+        <div class="value-proposition">
+        <paper-material elevation="1">
+            <p>Two</p>
+        </paper-material>
+        </div>
+        <div class="value-proposition">
+        <paper-material elevation="1">
+            <p>Three</p>
+        </paper-material>
+        </div>
+    </div>
+</div>
+
+<div class="pricing clearfix">
+    <h3 class="section">Pricing</h3>
+
+<div class="prices clearfix">
+
+    <div class="price pricing-1">
+        <paper-material elevation="1">
+            <p>Free</p>
+        </paper-material>
+    </div>
+    <div class="price pricing-2">
+        <paper-material elevation="3">
+            <p>Basic</p>
+        </paper-material>
+    </div>
+    <div class="price pricing-3">
+        <paper-material elevation="1">
+            <p>Pro</p>
+        </paper-material>
+    </div>
+    </div>
+
+    <div class="call-to-action">
+        <paper-button raised>Register for early access</paper-button>
+    </div>
+</div>
+{{ template "footer" . }}

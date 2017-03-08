@@ -1,0 +1,217 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<dom-module id="later-items">
+  <template>
+    <style>
+        :host {
+            display: block;
+        }
+
+        paper-material.no-items {
+          padding: 10px;
+          margin: 10px;
+          background: white;
+        }
+
+        paper-material.no-items p {
+          text-align: center;
+        }
+
+        add-element {
+          display: block;
+          position: absolute;
+          bottom: 10px;
+          right: 10px;
+        }
+
+    </style>
+    <!-- items -->
+    <template is="dom-repeat" items="{{items}}">
+      <container-element child-name="[[item.ElementName]]" 
+          task-id="[[item.ID]]"
+          show-today
+          is-complete="[[item.IsComplete]]" 
+          element-data="[[item.Data]]"
+          on-element-updated="_elementUpdated"
+          on-element-delete="_elementDelete"
+          on-element-do-today="_elementDoToday">
+      </container-element>
+    </template>
+       <paper-material class="no-items" elevation="1" hidden$="{{!isEmpty}}">
+          <p>No items</p>
+        </paper-material>
+
+    <!-- action button -->
+    <add-element book-id="[[bookId]]" on-add-selected-element="_addElement"></add-element>
+    <!-- undo button -->
+    <template is="dom-if" if="{{undoDeleteTaskId}}">
+      <paper-button on-tap="_restoreItem">
+        Undo last delete
+      </paper-button>
+    </template>
+    <!-- ajax calls -->
+    <iron-ajax
+        id="laterGet"
+        auto
+        url="http://localhost:8080/api/v1/book/[[bookId]]/later"
+        handle-as="json"
+        on-response="_laterResponse"></iron-ajax>
+
+    <iron-ajax
+        id="laterPost"
+        x-content-type="application/json"
+        content-type="application/x-www-form-urlencoded"
+        method="POST"
+        url="http://localhost:8080/api/v1/book/[[bookId]]/later"
+        handle-as="json"
+        on-response="_laterPostResponse"></iron-ajax>
+    <iron-ajax
+        id="laterPut"
+        x-content-type="application/json"
+        content-type="application/x-www-form-urlencoded"
+        method="PUT"
+        url="http://localhost:8080/api/v1/book/[[bookId]]/later/[[currentTaskId]]"
+        handle-as="json"
+        on-response="_laterPutResponse"></iron-ajax>
+    <iron-ajax
+        id="laterRestore"
+        x-content-type="application/json"
+        content-type="application/x-www-form-urlencoded"
+        method="PUT"
+        url="http://localhost:8080/api/v1/book/[[bookId]]/later/[[currentTaskId]]/restore"
+        handle-as="json"
+        on-response="_laterRestoreResponse"></iron-ajax>
+    <iron-ajax
+        id="ajaxDoToday"
+        x-content-type="application/json"
+        content-type="application/x-www-form-urlencoded"
+        method="PUT"
+        url="http://localhost:8080/api/v1/book/[[bookId]]/later/[[currentTaskId]]/dotoday"
+        handle-as="json"
+        on-response="_ajaxDoTodayResponse"></iron-ajax>
+    <iron-ajax
+        id="laterDelete"
+        x-content-type="application/json"
+        content-type="application/x-www-form-urlencoded"
+        method="DELETE"
+        url="http://localhost:8080/api/v1/book/[[bookId]]/later/[[currentTaskId]]"
+        handle-as="json"
+        on-response="_laterDeleteResponse"></iron-ajax>
+  </template>
+  <script>
+    Polymer({
+      is: 'later-items',
+      properties: {
+        dayAsString: {
+          type: String,
+          value: '',
+        },
+        bookId: {
+          type: String,
+          value: '',
+        },
+        currentTaskId: {
+          type: String,
+          value: '',
+        },
+        undoDeleteTaskId: {
+          type: String,
+          value: '',
+        },
+        items: {
+          type: Array,
+          value: function() {
+            return [];
+          },
+          notify: true
+        },
+        isEmpty: {
+          type: Boolean,
+          value: true
+        },
+      },
+      observers: [
+        'itemsAddedOrRemoved(items.splices)'
+      ],
+      itemsAddedOrRemoved: function(changeRecord){
+        console.log('itemsAddedOrRemoved',changeRecord, this.items.length);
+        this.isEmpty = this.items.length == 0;
+      },
+      _addElement: function(ev){
+         var item = ev.detail.item;
+          console.log('_addElement', item);
+          // ajax request to create default object
+          this.$.laterPost.body = { elementName: item.ElementName };
+          this.$.laterPost.generateRequest();
+      },
+      _restoreItem: function() {
+          this.currentTaskId = this.undoDeleteTaskId;
+          this.$.laterRestore.body = { ID: this.undoDeleteTaskId };
+          this.$.laterRestore.generateRequest();
+      },
+      _laterResponse: function(data) {
+        this.items = data.detail.response.data;
+      },
+      _laterPostResponse: function(data) {
+          console.log(data.detail.response.data);
+          // check for error codes?
+          this.push('items', data.detail.response.data);
+      },
+      _laterPutResponse: function(data) {
+          var result = data.detail.response.data;
+          console.log('_laterPutResponse', data.detail.response.data);
+          if (result.IsComplete){
+            var item = this.items.find(function(f){return f.ID == result.ID});
+            if (item) {
+              var index = this.items.indexOf(item);
+              this.splice('items', index, 1);
+            }
+          }
+      },
+      _laterDeleteResponse: function(data) {
+          console.log('_laterDeleteResponse', data.detail.response.data);
+          var taskID = data.detail.response.data.ID;
+          this.undoDeleteTaskId = taskID;
+          var item = this.items.find(function(f){return f.ID == taskID});
+          console.log('unshift item', item);
+          if (item) {
+            var index = this.items.indexOf(item);
+            this.splice('items', index, 1);
+          }
+      },
+      _laterRestoreResponse: function(data) {
+        this.$.laterGet.generateRequest();
+        this.undoDeleteTaskId = "";
+      },
+      _elementUpdated: function(ev) {
+          console.log(ev);
+          var data = ev.detail;
+          console.log('container element data updated', data);
+          this.currentTaskId = data.taskId;
+          this.$.laterPut.body = { ID: data.taskId, Data: data.elementData, IsComplete: data.isComplete };
+          this.$.laterPut.generateRequest();
+      },
+      _elementDelete: function(ev) {
+          var data = ev.detail;
+          console.log('container element data delete', data);
+          this.currentTaskId = data.taskId;
+          //this.$.laterDelete.body = { ID: data.taskId, Data: data.elementData, IsComplete: data.isComplete };
+          this.$.laterDelete.generateRequest();
+      },
+      _elementDoToday: function(ev){
+          var data = ev.detail;
+          console.log('container element data updated to today', data);
+          this.currentTaskId = data.taskId;
+          this.$.ajaxDoToday.body = { ID: data.taskId, Data: data.elementData, IsComplete: data.isComplete };
+          this.$.ajaxDoToday.generateRequest();
+      },
+      _ajaxDoTodayResponse: function(data) {
+          var taskID = data.detail.response.data.ID;
+          var item = this.items.find(function(f){return f.ID == taskID});
+          if (item) {
+            var index = this.items.indexOf(item);
+            this.splice('items', index, 1);
+          }
+      },
+    });
+  </script>
+</dom-module>

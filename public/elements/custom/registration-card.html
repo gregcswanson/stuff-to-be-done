@@ -1,0 +1,64 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<dom-module id="registration-card">
+  <template>
+    <style>
+        :host {
+            display: inline-block;
+        }
+        
+        form > paper-card paper-button {
+            background-color: #aaa;
+            color: white !important;
+        }
+
+        form > paper-card .card-actions {
+            text-align: right;
+        }
+    </style>
+    <form is="iron-form" id="registerform" method="post" action="/api/v1/internal/register" on-iron-form-response="responseHandler">
+        <paper-card heading="Register" hidden$="{{posted}}">
+            <div class="card-content">
+                <p>Get updates and notified when the site is live</p>
+                <gold-email-input name="email" label="your email address" auto-validate required value="{{email::value}}"></gold-email-input>
+                <paper-checkbox name="beta" checked="{{beta}}">I would like access to the beta</paper-checkbox>
+            </div>
+            
+            <div class="card-actions">
+                <paper-button raised on-tap="submitForm">Submit</paper-button>
+            </div>
+        </paper-card>
+        <paper-card heading="Thank you" hidden$="{{!posted}}">
+            <div class="card-content">
+                <p>We have recorded your interest and will email<br /><br /><b>{{email}}</b><br /><br />as soon as the site is live.</p>
+            </div>
+        </paper-card>
+    </form>
+  </template>
+  <script>
+    Polymer({
+      is: 'registration-card',
+      properties: {
+        email: {
+          type: String,
+          value: 'test@test.com',
+        },
+        beta: {
+          type: Boolean,
+          value: true,
+        },
+        posted: {
+            type: Boolean,
+            value: false,
+        },
+      },
+      submitForm: function() {
+        document.getElementById('registerform').submit();
+      },
+      responseHandler: function(e) {
+          if (e.detail.response.status == 'posted'){
+            this.posted = true;
+          }
+       },
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,9 @@
+{{ template "bookheader" . }}
+
+<a href="/book/{{.bookID}}/{{.todayAsString}}/day">today</a>
+<a href="/book/{{.bookID}}/{{.dayAsString}}/complete">not doing</a>
+
+
+<previous-day-items day-as-string="{{.dayAsString}}" book-id="{{.bookID}}"></previous-day-items>
+
+{{ template "footer" . }}

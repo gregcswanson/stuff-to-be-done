@@ -1,0 +1,36 @@
+application: stufftobedone
+version: 1
+runtime: go
+api_version: go1
+
+handlers:
+- url: /stylesheets
+  static_dir: public/css
+  
+- url: /js
+  static_dir: public/js
+  
+- url: /bower_components
+  static_dir: bower_components
+
+- url: /elements
+  static_dir: public/elements
+
+- url: /fonts
+  static_dir: public/fonts
+
+- url: /(.*\.(gif|png|jpg|ico))
+  static_files: public/images/\1
+  upload: images/(.*\.(gif|png|jpg|ico))
+  
+- url: /admin/.*
+  script: _go_app
+  login: admin
+
+- url: /app/.*
+  script: _go_app
+  login: required
+
+- url: /.*
+  script: _go_app
+  login: optional

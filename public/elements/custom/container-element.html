@@ -1,0 +1,164 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="container-element">
+  <template>
+    <style>
+      :host {
+        display: block;
+        padding: 10px 0;
+        margin-top: 2px;
+        background-color: linen;
+        color: black;
+      }
+      div.tools {
+        display: block;
+        text-align: right;
+      }
+    </style>
+    <div class="tools">
+        <paper-button on-tap="_delete" hidden$="{{isCompleteView}}">
+            <span>Delete</span>
+        </paper-button>
+        <paper-button on-tap="_doLater" hidden$="{{!showLater}}">
+            <span>Do later</span>
+        </paper-button>
+        <paper-button on-tap="_doToday" hidden$="{{!showToday}}">
+            <span>Do today</span>
+        </paper-button>
+        <paper-button on-tap="_reopen" hidden$="{{!canReopen}}">
+            <span>Re open</span>
+        </paper-button>
+    </div>
+    <!-- <p>Container for element [[childName]] - [[elementData]]</p> -->
+    <div id="insertion"></div>
+    <!-- <sample-element><h2>not loaded</h2></sample-element> -->
+  </template>
+
+
+  <script>
+    Polymer({
+
+      is: 'container-element',
+
+      properties: {
+        childName: {
+          type: String,
+          value: '',
+        },
+        taskId: {
+          type: String,
+          value: '',
+        },
+        isComplete: {
+          type: Boolean,
+          value: false,
+          observer: 'isCompleteChanged',
+        },
+        showLater: {
+          type: Boolean,
+          value: false,
+        },
+        showToday: {
+          type: Boolean,
+          value: false,
+        },
+        isCompleteView: {
+          type: Boolean,
+          value: false,
+          observer: 'isCompleteViewChanged',
+        },
+        elementData: {
+          type: String,
+          observer: 'dataChanged',
+        },
+        canReopen: {
+          type: Boolean,
+          value: false
+        }
+      },
+      ready: function(){
+            var self = this;
+            console.log('container-element ready', this.childName);
+            this.importHref(this.resolveUrl('/element/' + this.childName + '.html'));
+            var el = this.$.el = document.createElement(this.childName);
+            console.log(el);
+            el.isComplete = this.isComplete;
+            el.isCompleteView = this.isCompleteView;
+            if (this.elementData && this.elementData.length > 0) {
+              var data = JSON.parse(this.elementData);
+              console.log('container-element data', data);
+              el.elementData = data;
+            }
+            this.$.insertion.appendChild(el);
+            el.addEventListener("element-changed", function(ev){
+              console.log('element-changed fired', ev.detail);
+              self.elementData = JSON.stringify(ev.detail.data);
+              self.isComplete = ev.detail.isComplete;
+              this.fire('element-updated', { taskId: self.taskId, elementData: self.elementData, isComplete: self.isComplete }, { bubbles: true });
+            });
+
+            //Polymer.dom(this.$.insertion).appendChild(insertionElement);
+      
+            /*
+            var self = this;
+            var el = this.$.el = document.createElement("another-element");
+
+            //set the initial value of child's foo property
+            el.foo = this.foo;
+            //listen to foo-changed event to sync with parent's foo property
+            el.addEventListener("foo-changed", function(ev){
+              self.foo = this.foo;
+            });
+
+            */
+
+          
+      },
+      isCompleteChanged: function(newValue) {
+        console.log('isComplete changed',  newValue);
+        if (this.$.el) {
+          this.$.el.isComplete = newValue;
+        }
+      },
+      isCompleteViewChanged: function(newValue){
+        console.log('isCompleteView changed',  newValue);
+        if (this.$.el) {
+          this.$.el.isCompleteView = newValue;
+        }
+      },
+      dataChanged: function(newValue) {
+        //console.log('data changed', newValue);
+        if (this.$.el) {
+          var data = JSON.parse(this.elementData);
+          console.log('container-element data changed', data);
+          this.$.el.elementData = data;
+        }
+      },
+      attached: function(){
+          //console.log('container-element attached');
+           // var insertionElement = document.createElement('sample-element');
+           // console.log(insertionElement);
+           // Polymer.dom(this.$.insertion).appendChild(insertionElement);
+      },
+      _delete: function(){
+        var data = { taskId: this.taskId, elementData: this.elementData, isComplete: this.isComplete };
+        console.log('element delete', data)
+          this.fire('element-delete', data, { bubbles: true });
+      },
+      _doLater: function(){
+        var data = { taskId: this.taskId, elementData: this.elementData, isComplete: this.isComplete };
+        console.log('element do later', data)
+          this.fire('element-do-later', data, { bubbles: true });
+      },
+      _doToday: function(){
+        var data = { taskId: this.taskId, elementData: this.elementData, isComplete: this.isComplete };
+        console.log('element do today', data)
+          this.fire('element-do-today', data, { bubbles: true });
+      },
+      _reopen: function() {
+          console.log('reopen');
+        this.fire('element-updated', { taskId: this.taskId, elementData: this.elementData, isComplete: false }, { bubbles: true });
+      },
+    });
+  </script>
+</dom-module>

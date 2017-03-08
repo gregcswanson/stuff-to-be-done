@@ -1,0 +1,235 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<dom-module id="day-items">
+  <template>
+    <style>
+        :host {
+            display: block;
+        }
+
+        paper-material.no-items {
+          padding: 10px;
+          margin: 10px;
+          background: white;
+        }
+
+        paper-material.no-items p {
+          text-align: center;
+        }
+
+        add-element {
+          display: block;
+          position: absolute;
+          bottom: 10px;
+          right: 10px;
+        }
+
+    </style>
+    <!-- items -->
+    <template is="dom-repeat" items="{{items}}">
+      <container-element child-name="[[item.ElementName]]" 
+          task-id="[[item.TaskID]]"
+          is-complete="[[item.IsCompleted]]" 
+          show-later=[[!item.IsCompleted]]
+          can-reopen=[[item.CanReopen]]
+          is-complete-view={{item.IsCompleted}}
+          element-data="[[item.Data]]"
+          on-element-updated="_elementUpdated"
+          on-element-delete="_elementDelete"
+          on-element-do-later="_elementDoLater">
+      </container-element>
+    </template>
+       <paper-material class="no-items" elevation="1" hidden$="{{!isEmpty}}">
+          <p>No items</p>
+        </paper-material>
+
+    <!-- action button -->
+    <add-element book-id="[[bookId]]" on-add-selected-element="_addElement"></add-element>
+    <!-- undo button -->
+    <template is="dom-if" if="{{undoDeleteTaskId}}">
+      <paper-button on-tap="_restoreItem">
+        Undo last delete
+      </paper-button>
+    </template>
+    <!-- ajax calls -->
+    <iron-ajax
+        id="ajaxGetDayItems"
+        auto
+        url="http://localhost:8080/api/v1/book/[[bookId]]/day/[[dayAsString]]"
+        handle-as="json"
+        on-response="_ajaxGetDayItemsResponse"></iron-ajax>
+
+    <iron-ajax
+        id="ajaxCreateDayItem"
+        x-content-type="application/json"
+        content-type="application/x-www-form-urlencoded"
+        method="POST"
+        url="http://localhost:8080/api/v1/book/[[bookId]]/day/[[dayAsString]]"
+        handle-as="json"
+        on-response="_ajaxCreateDayItemPostResponse"></iron-ajax>
+    <iron-ajax
+        id="ajaxUpdateDayItem"
+        x-content-type="application/json"
+        content-type="application/x-www-form-urlencoded"
+        method="PUT"
+        url="http://localhost:8080/api/v1/book/[[bookId]]/day/[[currentTaskId]]"
+        handle-as="json"
+        on-response="_ajaxUpdateDayItemResponse"></iron-ajax>
+    <iron-ajax
+        id="ajaxDoLaterDayItem"
+        x-content-type="application/json"
+        content-type="application/x-www-form-urlencoded"
+        method="PUT"
+        url="http://localhost:8080/api/v1/book/[[bookId]]/day/[[currentTaskId]]/dolater"
+        handle-as="json"
+        on-response="_ajaxDoLaterResponse"></iron-ajax>
+    <iron-ajax
+        id="laterRestore"
+        x-content-type="application/json"
+        content-type="application/x-www-form-urlencoded"
+        method="PUT"
+        url="http://localhost:8080/api/v1/book/[[bookId]]/later/[[currentTaskId]]/restore"
+        handle-as="json"
+        on-response="_laterRestoreResponse"></iron-ajax>
+    <iron-ajax
+        id="ajaxDeleteDayItem"
+        x-content-type="application/json"
+        content-type="application/x-www-form-urlencoded"
+        method="DELETE"
+        url="http://localhost:8080/api/v1/book/[[bookId]]/day/[[currentTaskId]]"
+        handle-as="json"
+        on-response="_ajaxDeleteDayItemResponse"></iron-ajax>
+  </template>
+  <script>
+    Polymer({
+      is: 'day-items',
+      properties: {
+        dayAsString: {
+          type: String,
+          value: '',
+        },
+        bookId: {
+          type: String,
+          value: '',
+        },
+        currentTaskId: {
+          type: String,
+          value: '',
+        },
+        undoDeleteTaskId: {
+          type: String,
+          value: '',
+        },
+        items: {
+          type: Array,
+          value: function() {
+            return [];
+          },
+          notify: true
+        },
+        isEmpty: {
+          type: Boolean,
+          value: true
+        },
+      },
+      observers: [
+        'itemsAddedOrRemoved(items.splices)'
+      ],
+      itemsAddedOrRemoved: function(changeRecord){
+        console.log('itemsAddedOrRemoved',changeRecord, this.items.length);
+        this.isEmpty = this.items.length == 0;
+      },
+      _addElement: function(ev){
+         var item = ev.detail.item;
+          console.log('_addElement', item);
+          // ajax request to create default object
+          this.$.ajaxCreateDayItem.body = { elementName: item.ElementName };
+          this.$.ajaxCreateDayItem.generateRequest();
+      },
+      _elementDoLater: function(ev){
+          var data = ev.detail;
+          console.log('container element do later', data);
+          this.currentTaskId = data.taskId;
+          // find the dayId from the current list
+          var item = this.items.find(function(f){return f.TaskID == data.taskId});
+          if (item != null){
+            this.$.ajaxDoLaterDayItem.body = { DayID: item.DayID,  TaskID: data.taskId, Data: data.elementData, IsComplete: data.isComplete };
+            this.$.ajaxDoLaterDayItem.generateRequest();
+          }
+      },
+      _restoreItem: function() {
+          this.currentTaskId = this.undoDeleteTaskId;
+          this.$.laterRestore.body = { ID: this.undoDeleteTaskId };
+          this.$.laterRestore.generateRequest();
+      },
+      _ajaxGetDayItemsResponse: function(data) {
+        this.items = data.detail.response.data;
+      },
+      _ajaxCreateDayItemPostResponse: function(data) {
+          console.log(data.detail.response.data);
+          // check for error codes?
+          this.push('items', data.detail.response.data);
+      },
+      _ajaxUpdateDayItemResponse: function(data) {
+          var result = data.detail.response.data;
+          //console.log('_ajaxUpdateDayItemResponse', data.detail.response.data);
+          var item = this.items.find(function(f){return f.TaskID == result.TaskID});
+          //console.log('refresh item', item);
+          if (item) {
+            var index = this.items.indexOf(item);
+            
+            console.log('refresh item', index, result);
+            this.splice('items', index, 1, result);
+            //this.set('items', this.items);
+            //this.push('items', result);
+            //this.items[index] = result;
+            //this.$.ajaxGetDayItems.generateRequest();
+          }
+      },
+      _ajaxDoLaterResponse: function(data) {
+          var result = data.detail.response.data;
+          console.log('_ajaxDoLaterResponse', result);
+          var item = this.items.find(function(f){return f.TaskID == result.TaskID});
+          console.log('unshift item', item);
+          if (item) {
+            var index = this.items.indexOf(item);
+            this.splice('items', index, 1);
+          }
+          // trigger an update message to the later module if it exists
+      },
+      _ajaxDeleteDayItem: function(data) {
+          console.log('_ajaxDeleteDayItem', data.detail.response.data);
+          var taskID = data.detail.response.data.ID;
+          this.undoDeleteTaskId = taskID;
+          var item = this.items.find(function(f){return f.ID == taskID});
+          console.log('unshift item', item);
+          if (item) {
+            var index = this.items.indexOf(item);
+            this.splice('items', index, 1);
+          }
+      },
+      _laterRestoreResponse: function(data) {
+        this.$.laterGet.generateRequest();
+        this.undoDeleteTaskId = "";
+      },
+      _elementUpdated: function(ev) {
+          console.log(ev);
+          var data = ev.detail;
+          console.log('container element data updated', data);
+          this.currentTaskId = data.taskId;
+          // find the dayId from the current list
+          var item = this.items.find(function(f){return f.TaskID == data.taskId});
+          if (item != null){
+            this.$.ajaxUpdateDayItem.body = { DayID: item.DayID,  TaskID: data.taskId, Data: data.elementData, IsComplete: data.isComplete };
+            this.$.ajaxUpdateDayItem.generateRequest();
+          }
+          
+      },
+      _elementDelete: function(ev) {
+          var data = ev.detail;
+          console.log('container element data delete', data);
+          this.currentTaskId = data.taskId;
+          this.$.laterDelete.generateRequest();
+      }
+    });
+  </script>
+</dom-module>
