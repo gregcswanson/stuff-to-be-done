@@ -1,0 +1,55 @@
+<dom-module id="element-test">
+    <template>
+        <style>
+        :host {
+            display: block;
+            background-color:white;
+            color: darkslategray;
+            padding: 5px;
+        }
+        p {
+            padding: 20px;
+        }
+        </style>
+        <div hidden$="{{!isCompletedView}}">
+            <p>{{elementData.text}}</p>
+        </div>
+        <div hidden$="{{isCompletedView}}">
+            <input type="text" value="{{elementData.text::input}}">
+            <paper-checkbox name="iscompleted" checked="{{isCompleted}}">Is Completed</paper-checkbox>
+            <paper-button on-tap="save">
+                <span>Save</span>
+            </paper-button>
+        </div>
+    </template>
+
+    <script>
+        Polymer({
+
+        is: 'element-test',
+
+        properties: {
+            elementData: {
+                type: Object,
+                value: function() {
+                    return {text: 'hello', status: 'OPEN'}
+                },
+            },
+            isCompleted: {
+                type: Boolean,
+                value: false,
+            },
+            isCompletedView: {
+                type: Boolean,
+                value: false,
+            },
+        },
+        save: function(){
+            var result =  {data: this.elementData, isCompleted: this.isCompleted};
+            console.log('element-changed', result);
+            this.fire('element-changed', result, { bubbles: true });
+        },
+
+        });
+    </script>
+</dom-module>

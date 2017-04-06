@@ -23,9 +23,11 @@ _testmain.go
 
 # Google App Engine generated folder
 appengine-generated/
+web/appengine-generated/
 
 
 bower_components/
+web/bower_components/
 
 # Logs
 logs
@@ -38,6 +40,7 @@ npm-debug.log*
 # Dependency directories
 node_modules
 jspm_packages
+web/node_modules
 
 # Optional npm cache directory
 .npm

@@ -1,0 +1,9 @@
+{{ template "bookheader" . }}
+
+<a href="/book/{{.bookID}}/later">(x) later</a>
+<a href="/book/{{.bookID}}/trash">Trash</a>
+<a href="/book/{{.bookID}}/history">History</a>
+
+<current-day book-id="{{.bookID}}"></current-day>
+
+{{ template "footer" . }}

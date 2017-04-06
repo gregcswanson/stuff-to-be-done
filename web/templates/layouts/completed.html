@@ -1,0 +1,8 @@
+{{ template "bookheader" . }}
+
+<a href="/book/{{.bookID}}/{{.dayAsString}}/day">cancel</a>
+<a href="/book/{{.bookID}}/{{.dayAsString}}/later">do later</a>
+
+<completed-items day-as-string="{{.dayAsString}}" book-id="{{.bookID}}"></completed-items>
+
+{{ template "footer" . }}

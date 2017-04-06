@@ -1,0 +1,135 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<dom-module id="app-api">
+  <template>
+    <style>
+        
+    </style>
+
+    <!-- ajax calls -->
+    <iron-ajax
+        id="ajaxGetCompletedItems"
+        url="http://localhost:8080/api/v1/book/[[bookId]]/completed"
+        handle-as="json"
+        on-response="_ajaxGetCompletedItemsResponse">
+    </iron-ajax>
+    <iron-ajax
+        id="ajaxGetTrash"
+        url="http://localhost:8080/api/v1/book/[[bookId]]/trash"
+        handle-as="json"
+        on-response="_ajaxGetTrashResponse">
+    </iron-ajax>
+    <iron-ajax
+        id="ajaxPutDoTaskLater"
+        x-content-type="application/json"
+        content-type="application/x-www-form-urlencoded"
+        method="PUT"
+        url="http://localhost:8080/api/v1/book/[[bookId]]/dolater/[[currentTaskId]]"
+        handle-as="json"
+        on-response="_ajaxPutDoTaskLaterResponse">
+    </iron-ajax>
+    <iron-ajax
+        id="ajaxDoToday"
+        x-content-type="application/json"
+        content-type="application/x-www-form-urlencoded"
+        method="PUT"
+        url="http://localhost:8080/api/v1/book/[[bookId]]/move/[[currentTaskId]]"
+        handle-as="json"
+        on-response="_ajaxDoTodayResponse"></iron-ajax>
+    <iron-ajax
+        id="ajaxDeleteTask"
+        x-content-type="application/json"
+        content-type="application/x-www-form-urlencoded"
+        method="DELETE"
+        url="http://localhost:8080/api/v1/book/[[bookId]]/task/[[currentTaskId]]"
+        handle-as="json"
+        on-response="_ajaxDeleteTaskResponse"></iron-ajax>
+  </template>
+  <script>
+    Polymer({
+        is: 'app-api',
+        properties: {
+            dayAsString: {
+                type: String,
+                value: '',
+            },
+            bookId: {
+                type: String,
+                value: '',
+            },
+            currentTaskId: {
+                type: String,
+                value: '',
+            },
+            dayId: {
+                type: String,
+                value: '',
+            },
+            undoDeleteTaskId: {
+            type: String,
+                value: '',
+                notify: true
+            },
+        },
+        getCompletedItems: function(){
+            this.$.ajaxGetCompletedItems.generateRequest();
+        },
+        _ajaxGetCompletedItemsResponse: function(data) {
+            var items = data.detail.response.data;
+            this.fire('completed-items-loaded', { items: items }, { bubbles: true });
+        },
+        getTrash: function(){
+            this.$.ajaxGetTrash.generateRequest();
+        },
+        _ajaxGetTrashResponse: function(data) {
+            var items = data.detail.response.data;
+            this.fire('trash-loaded', { items: items }, { bubbles: true });
+        },
+        doTaskLater: function(item){
+            console.log('app-api: do task later', item);
+            this.currentTaskId = item.taskId;
+            this.$.ajaxPutDoTaskLater.body = { TaskID: item.taskId, DayID: item.dayId, Data: item.elementData, IsCompleted: item.isCompleted };
+            this.$.ajaxPutDoTaskLater.generateRequest();
+        },
+        _ajaxPutDoTaskLaterResponse: function(event){
+            console.log('_ajaxPutDoTaskLaterResponse', event.detail.response.data);
+            this.fire('task-do-later-completed', { item: event.detail.response.data }, { bubbles: true });
+        },
+        doTaskToday: function(item){
+          // set the .dayAsString to the current date to move the item to
+          var dayAsString = this._dateToInt(new Date()).toString();
+          console.log('container element data updated to today', item, dayAsString);
+          this.currentTaskId = item.taskId;
+          this.$.ajaxDoToday.body = { TaskID: item.taskId, Data: item.elementData, IsCompleted: item.isCompleted, DayAsString: dayAsString };
+          this.$.ajaxDoToday.generateRequest();
+        },
+        _dateToInt: function (date) {
+            var result = date.getFullYear().toString();
+            if (date.getMonth() + 1 < 10) result += "0";
+            result += (date.getMonth() + 1).toString();
+            if (date.getDate() < 10) result += "0";
+            result += date.getDate().toString();
+            return result;
+        },
+        _ajaxDoTodayResponse: function(data) {
+             console.log('_ajaxDoTodayResponse', event.detail.response.data);
+            this.fire('task-do-today-completed', { item: event.detail.response.data }, { bubbles: true });
+          //var taskID = data.detail.response.data.TaskID;
+          //var item = this.items.find(function(f){return f.ID == taskID});
+          //if (item) {
+          //  var index = this.items.indexOf(item);
+          //  this.splice('items', index, 1);
+         // }
+        },
+        deleteTask: function(taskID) {
+            console.log('api delete', taskID);
+            this.currentTaskId = taskID;
+            this.$.ajaxDeleteTask.generateRequest();
+        },
+        _ajaxDeleteTaskResponse: function(data) {
+          console.log('_ajaxDeleteTaskResponse', data.detail.response.data);
+          var taskID = data.detail.response.data.TaskID;
+          this.fire('task-deleted', { item: { TaskID: taskID } }, { bubbles: true });
+        },
+    });
+  </script>
+</dom-module>

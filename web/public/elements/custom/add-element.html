@@ -1,0 +1,69 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<dom-module id="add-element">
+  <template>
+    <style>
+        :host {
+            display: block;
+        }
+
+        paper-material.actions {
+          display: block;
+          position: absolute;
+          bottom: 90px;
+          right: 20px;
+          width: 200px;
+        }
+
+        paper-fab {
+          display: block;
+          position: absolute;
+          bottom: 20px;
+          right: 20px;
+        }
+    </style>
+    
+    <!-- list of elements that can be added -->
+    <paper-material class="actions" elevation="3" hidden$="{{!listIsVisible}}">
+        <paper-listbox>
+            <template is="dom-repeat" items="{{elementTypes.data}}">
+                <paper-icon-item on-tap="_addItem">
+                <iron-icon icon="[[item.Icon]]" item-icon></iron-icon>[[item.Name]]</paper-icon-item>
+            </template>  
+        </paper-listbox>
+    </paper-material>
+    
+    <paper-fab icon="add" on-tap="_showList"></paper-fab>
+    <!-- ~ action button -->
+    <iron-ajax
+        auto
+        url="http://localhost:8080/api/v1/book/[[bookId]]/elements"
+        handle-as="json"
+        last-response="{{elementTypes}}">
+    </iron-ajax>
+
+  </template>
+  <script>
+    Polymer({
+      is: 'add-element',
+      properties: {
+        bookId: {
+          type: String,
+          value: '',
+        },
+        listIsVisible: {
+            type: Boolean,
+            value: false,
+        }
+      },
+      _showList: function(){
+          this.listIsVisible = !this.listIsVisible;
+      },
+      _addItem: function(e){
+        var item = e.model.item;
+        this.fire('add-selected-element', { item: item }, { bubbles: true });
+        this.listIsVisible = false;
+      },
+      
+    });
+  </script>
+</dom-module>
