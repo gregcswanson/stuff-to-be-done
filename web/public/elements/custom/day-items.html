@@ -2,49 +2,45 @@
 <dom-module id="day-items">
   <template>
     <style>
-        :host {
-            display: block;
-        }
+       :host {
+        display: block;
+      }
+      
+      paper-material {
+        padding: 0;
+        margin: 10px;
+        background: white;
+      }
+      
+      paper-material.no-items p {
+        text-align: center;
+        padding: 20px;
+      }
 
-        paper-material {
-          padding: 10px;
-          margin: 10px;
-          background: white;
-        }
-
-        paper-material.no-items p {
-          text-align: center;
-        }
-
-        add-element {
-          display: block;
-          position: fixed;
-          bottom: 10px;
-          right: 10px;
-          z-index: 1;
-        }
-
+      container-element:not(:first-child) { 
+        border-top: 1px dotted #bbb;
+      }
+      
+      add-element {
+        display: block;
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        z-index: 1;
+      }
     </style>
     <!-- items -->
     <paper-material elevation="1" hidden$="{{isEmpty}}">
-      <p>[[dayAsString]]</p>
       <template is="dom-repeat" items="{{items}}">
-        <container-element child-name="[[item.ElementName]]" 
-            task-id="[[item.TaskID]]"
-            is-completed="[[item.IsCompleted]]" 
-            show-later=[[!item.IsCompleted]]
-            can-reopen=[[item.CanReopen]]
-            is-completed-view={{item.IsCompleted}}
-            element-data="[[item.Data]]"
-            on-element-updated="_elementUpdated"
-            on-element-delete="_elementDelete"
-            on-element-do-later="_elementDoLater">
+        <container-element child-name="[[item.ElementName]]" task-id="[[item.TaskID]]" is-completed="[[item.IsCompleted]]" show-later=[[!item.IsCompleted]]
+          show-today=[[canShowToday]] can-reopen=[[item.CanReopen]] is-completed-view={{item.IsCompleted}} element-data="[[item.Data]]"
+          on-element-updated="_elementUpdated" on-element-delete="_elementDelete" on-element-do-later="_elementDoLater" on-element-do-today="_elementDoToday">
         </container-element>
       </template>
     </paper-material>
 
     <paper-material class="no-items" elevation="1" hidden$="{{!isEmpty}}">
-      <p>No items today</p>
+      <p>No items</p>
     </paper-material>
 
     <!-- action button -->
@@ -56,47 +52,19 @@
       </paper-button>
     </template>
     <!-- ajax calls -->
-    <iron-ajax
-        id="ajaxGetDayItems"
-        url="http://localhost:8080/api/v1/book/[[bookId]]/day/[[dayAsString]]"
-        handle-as="json"
-        on-response="_ajaxGetDayItemsResponse"></iron-ajax>
+    <iron-ajax id="ajaxGetDayItems" url="/api/v1/book/[[bookId]]/day/[[dayAsString]]" handle-as="json" on-response="_ajaxGetDayItemsResponse"></iron-ajax>
 
-    <iron-ajax
-        id="ajaxCreateDayItem"
-        x-content-type="application/json"
-        content-type="application/x-www-form-urlencoded"
-        method="POST"
-        url="http://localhost:8080/api/v1/book/[[bookId]]/day/[[dayAsString]]"
-        handle-as="json"
-        on-response="_ajaxCreateDayItemPostResponse"></iron-ajax>
-    <iron-ajax
-        id="ajaxUpdateDayItem"
-        x-content-type="application/json"
-        content-type="application/x-www-form-urlencoded"
-        method="PUT"
-        url="http://localhost:8080/api/v1/book/[[bookId]]/day/[[currentTaskId]]"
-        handle-as="json"
-        on-response="_ajaxUpdateDayItemResponse"></iron-ajax>
-    <iron-ajax
-        id="ajaxDoLaterDayItem"
-        x-content-type="application/json"
-        content-type="application/x-www-form-urlencoded"
-        method="PUT"
-        url="http://localhost:8080/api/v1/book/[[bookId]]/dolater/[[currentTaskId]]"
-        handle-as="json"
-        on-response="_ajaxDoLaterResponse"></iron-ajax>
-    <iron-ajax
-        id="laterRestore"
-        x-content-type="application/json"
-        content-type="application/x-www-form-urlencoded"
-        method="PUT"
-        url="http://localhost:8080/api/v1/book/[[bookId]]/later/[[currentTaskId]]/restore"
-        handle-as="json"
-        on-response="_laterRestoreResponse"></iron-ajax>
-    
-      <app-api id="appApi" book-id="[[bookId]]" 
-          on-task-deleted="_taskDeleted"></app-api>
+    <iron-ajax id="ajaxCreateDayItem" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="POST"
+      url="/api/v1/book/[[bookId]]/day/[[dayAsString]]" handle-as="json" on-response="_ajaxCreateDayItemPostResponse"></iron-ajax>
+    <iron-ajax id="ajaxUpdateDayItem" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="PUT"
+      url="/api/v1/book/[[bookId]]/day/[[currentTaskId]]" handle-as="json" on-response="_ajaxUpdateDayItemResponse"></iron-ajax>
+    <iron-ajax id="ajaxDoLaterDayItem" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="PUT"
+      url="/api/v1/book/[[bookId]]/dolater/[[currentTaskId]]" handle-as="json" on-response="_ajaxDoLaterResponse"></iron-ajax>
+    <iron-ajax id="laterRestore" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="PUT"
+      url="/api/v1/book/[[bookId]]/later/[[currentTaskId]]/restore" handle-as="json" on-response="_laterRestoreResponse"></iron-ajax>
+
+    <app-api id="appApi" book-id="[[bookId]]" on-task-deleted="_taskDeleted" on-task-do-today-completed="_taskDoTodayCompleted"></app-api>
+
   </template>
   <script>
     Polymer({
@@ -106,6 +74,10 @@
           type: String,
           value: '',
           observer: '_onDayAsStringChanged',
+        },
+        todayAsString: {
+          type: String,
+          value: '',
         },
         bookId: {
           type: String,
@@ -121,7 +93,7 @@
         },
         items: {
           type: Array,
-          value: function() {
+          value: function () {
             return [];
           },
           notify: true
@@ -130,147 +102,170 @@
           type: Boolean,
           value: true
         },
+        canShowToday: {
+          type: Boolean,
+          value: false
+        }
       },
       observers: [
         'itemsAddedOrRemoved(items.splices)'
       ],
-      _onDayAsStringChanged: function(newValue){
-        if (newValue !== ''){
+      _onDayAsStringChanged: function (newValue) {
+        if (newValue !== '') {
           this.$.ajaxGetDayItems.generateRequest();
         }
+        // get todayAsString
+        this.todayAsString = this._dateToInt(new Date()).toString();
+        this.canShowToday = this.todayAsString !== this.dayAsString;
       },
-      /*ready: function(){
-        if (this.dayAsString !== '') {
-          this.$.ajaxGetDayItems.generateRequest();
-        }
-      },*/
-      itemsAddedOrRemoved: function(changeRecord){
-        console.log('itemsAddedOrRemoved',changeRecord, this.items.length);
+      reloadItems: function () {
+        this.$.ajaxGetDayItems.generateRequest();
+      },
+      itemsAddedOrRemoved: function (changeRecord) {
+        console.log('itemsAddedOrRemoved', changeRecord, this.items.length);
         this.isEmpty = this.items.length == 0;
       },
-      _addElement: function(ev){
-         var item = ev.detail.item;
-          console.log('_addElement', item);
-          // ajax request to create default object
-          this.$.ajaxCreateDayItem.body = { elementName: item.ElementName };
-          this.$.ajaxCreateDayItem.generateRequest();
+      _addElement: function (ev) {
+        var item = ev.detail.item;
+        console.log('_addElement', item);
+        // ajax request to create default object
+        this.$.ajaxCreateDayItem.body = { elementName: item.ElementName };
+        this.$.ajaxCreateDayItem.generateRequest();
       },
-      _elementDoLater: function(ev){
-          var data = ev.detail;
-          console.log('container element do later', data);
-          this.currentTaskId = data.taskId;
-          // find the dayId from the current list
-          var item = this.items.find(function(f){return f.TaskID == data.taskId});
-          if (item != null){
-            this.$.ajaxDoLaterDayItem.body = { DayID: item.DayID,  TaskID: data.taskId, Data: data.elementData, IsCompleted: data.isCompleted };
-            this.$.ajaxDoLaterDayItem.generateRequest();
-          }
+      _elementDoLater: function (ev) {
+        var data = ev.detail;
+        console.log('container element do later', data);
+        this.currentTaskId = data.taskId;
+        // find the dayId from the current list
+        var item = this.items.find(function (f) { return f.TaskID == data.taskId });
+        if (item != null) {
+          this.$.ajaxDoLaterDayItem.body = { DayID: item.DayID, TaskID: data.taskId, Data: data.elementData, IsCompleted: data.isCompleted };
+          this.$.ajaxDoLaterDayItem.generateRequest();
+        }
       },
-      _restoreItem: function() {
-          this.currentTaskId = this.undoDeleteTaskId;
-          this.$.laterRestore.body = { ID: this.undoDeleteTaskId };
-          this.$.laterRestore.generateRequest();
+      _restoreItem: function () {
+        this.currentTaskId = this.undoDeleteTaskId;
+        this.$.laterRestore.body = { ID: this.undoDeleteTaskId };
+        this.$.laterRestore.generateRequest();
       },
-      _ajaxGetDayItemsResponse: function(data) {
+      _ajaxGetDayItemsResponse: function (data) {
         this.items = data.detail.response.data;
       },
-      _ajaxCreateDayItemPostResponse: function(data) {
-          console.log(data.detail.response.data);
-          // check for error codes?
-          this.push('items', data.detail.response.data);
+      _ajaxCreateDayItemPostResponse: function (data) {
+        console.log(data.detail.response.data);
+        // check for error codes?
+        this.push('items', data.detail.response.data);
       },
-      _ajaxUpdateDayItemResponse: function(data) {
-          var result = data.detail.response.data;
-          //console.log('_ajaxUpdateDayItemResponse', data.detail.response.data);
-          var item = this.items.find(function(f){return f.TaskID == result.TaskID});
-          //console.log('refresh item', item);
-          if (item) {
-            var index = this.items.indexOf(item);
-            
-            console.log('refresh item', index, result);
-            this.splice('items', index, 1, result);
-            //this.set('items', this.items);
-            //this.push('items', result);
-            //this.items[index] = result;
-            //this.$.ajaxGetDayItems.generateRequest();
-          }
+      _ajaxUpdateDayItemResponse: function (data) {
+        var result = data.detail.response.data;
+        //console.log('_ajaxUpdateDayItemResponse', data.detail.response.data);
+        var item = this.items.find(function (f) { return f.TaskID == result.TaskID });
+        //console.log('refresh item', item);
+        if (item) {
+          var index = this.items.indexOf(item);
+
+          console.log('refresh item', index, result);
+          this.splice('items', index, 1, result);
+          //this.set('items', this.items);
+          //this.push('items', result);
+          //this.items[index] = result;
+          //this.$.ajaxGetDayItems.generateRequest();
+        }
       },
-      _ajaxDoLaterResponse: function(data) {
-          var result = data.detail.response.data;
-          console.log('_ajaxDoLaterResponse', result);
-          var item = this.items.find(function(f){return f.TaskID == result.TaskID});
-          console.log('unshift item', item);
-          if (item) {
-            var index = this.items.indexOf(item);
-            this.splice('items', index, 1);
-          }
-          // trigger an update message to the later module if it exists
+      _ajaxDoLaterResponse: function (data) {
+        var result = data.detail.response.data;
+        console.log('_ajaxDoLaterResponse', result);
+        var item = this.items.find(function (f) { return f.TaskID == result.TaskID });
+        console.log('unshift item', item);
+        if (item) {
+          var index = this.items.indexOf(item);
+          this.splice('items', index, 1);
+        }
+        // trigger an update message to the later module if it exists
       },
-      
-      _taskDeleted: function(event){
-          var data = event.detail.item;
-          console.log('_taskDeleted', data);
-          var taskID = data.TaskID;
-          var self = this;
-          var item = this.items.find(function(f){return f.TaskID == taskID});
-          if (item) {
-            var index = this.items.indexOf(item);
-            console.log('remove item', item, index);
-            this.splice('items', index, 1);
-          }
+
+      _taskDeleted: function (event) {
+        var data = event.detail.item;
+        console.log('_taskDeleted', data);
+        var taskID = data.TaskID;
+        var self = this;
+        var item = this.items.find(function (f) { return f.TaskID == taskID });
+        if (item) {
+          var index = this.items.indexOf(item);
+          console.log('remove item', item, index);
+          this.splice('items', index, 1);
+        }
       },
-      _laterRestoreResponse: function(data) {
+      _laterRestoreResponse: function (data) {
         this.$.laterGet.generateRequest();
         this.undoDeleteTaskId = "";
       },
-      _elementUpdated: function(ev) {
-          console.log(ev);
-          var data = ev.detail;
-          console.log('container element data updated', data);
-          this.currentTaskId = data.taskId;
-          // find the dayId from the current list
-          var item = this.items.find(function(f){return f.TaskID == data.taskId});
-          if (item != null){
-            this.$.ajaxUpdateDayItem.body = { DayID: item.DayID,  TaskID: data.taskId, Data: data.elementData, IsCompleted: data.isCompleted };
-            this.$.ajaxUpdateDayItem.generateRequest();
-          }
-          
+      _elementUpdated: function (ev) {
+        console.log(ev);
+        var data = ev.detail;
+        console.log('container element data updated', data);
+        this.currentTaskId = data.taskId;
+        // find the dayId from the current list
+        var item = this.items.find(function (f) { return f.TaskID == data.taskId });
+        if (item != null) {
+          this.$.ajaxUpdateDayItem.body = { DayID: item.DayID, TaskID: data.taskId, Data: data.elementData, IsCompleted: data.isCompleted };
+          this.$.ajaxUpdateDayItem.generateRequest();
+        }
+
       },
-      removeItem: function(day, item, index, dayIndex, self){
+      removeItem: function (day, item, index, dayIndex, self) {
         var newDays = [];
-        for(var i = 0; i < day.DayTasks.length; i++)
-        {
-          if (i != index){
+        for (var i = 0; i < day.DayTasks.length; i++) {
+          if (i != index) {
             newDays.push(day.DayTasks[i]);
           }
         }
-        if (newDays.length == 0){
+        if (newDays.length == 0) {
           self.splice("items", dayIndex, 1);
         } else {
           self.set("items." + dayIndex + ".DayTasks", newDays);
         }
       },
-      findDayItem: function(taskId, callback){
-        for(var i  = 0; i < this.days.length; i++){
+      findDayItem: function (taskId, callback) {
+        for (var i = 0; i < this.days.length; i++) {
           var day = this.days[i];
-          for(var j  = 0; j < day.DayTasks.length; j++){
+          for (var j = 0; j < day.DayTasks.length; j++) {
             var item = day.DayTasks[j];
-            if (item.TaskID == taskId){
+            if (item.TaskID == taskId) {
               callback(day, item, j, i);
               return;
             }
           }
         }
       },
-      //_elementDelete: function(ev) {
-      //    var data = ev.detail;
-      //    console.log('container element data delete', data);
-      //    this.currentTaskId = data.taskId;
-      //    this.$.ajaxDeleteDayItem.generateRequest();
-      //},
-      _elementDelete: function(ev) {
-          var data = ev.detail;
-          this.$.appApi.deleteTask(data.taskId);
+      _elementDelete: function (ev) {
+        var data = ev.detail;
+        this.$.appApi.deleteTask(data.taskId);
+      },
+      _elementDoToday: function (ev) {
+        var data = ev.detail;
+        data.dayId = '';
+        this.$.appApi.doTaskToday(data);
+      },
+      _taskDoTodayCompleted: function (ev) {
+        var data = ev.detail.item;
+        console.log('_taskDoLaterCompleted', data);
+        var taskID = data.TaskID;
+        var self = this;
+        var item = this.items.find(function (f) { return f.TaskID == taskID });
+        if (item) {
+          var index = this.items.indexOf(item);
+          console.log('remove item', item, index);
+          this.splice('items', index, 1);
+        }
+      },
+      _dateToInt: function (date) {
+        var result = date.getFullYear().toString();
+        if (date.getMonth() + 1 < 10) result += "0";
+        result += (date.getMonth() + 1).toString();
+        if (date.getDate() < 10) result += "0";
+        result += date.getDate().toString();
+        return result;
       },
     });
   </script>

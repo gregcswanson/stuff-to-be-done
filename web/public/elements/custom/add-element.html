@@ -19,8 +19,11 @@
           position: absolute;
           bottom: 20px;
           right: 20px;
+          --paper-fab-background: #607d8b;
         }
     </style>
+    
+    <iron-overlay-backdrop id="backdrop" on-tap="_showList"></iron-overlay-backdrop>
     
     <!-- list of elements that can be added -->
     <paper-material class="actions" elevation="3" hidden$="{{!listIsVisible}}">
@@ -57,11 +60,17 @@
       },
       _showList: function(){
           this.listIsVisible = !this.listIsVisible;
+          if (this.listIsVisible){
+            this.$.backdrop.open();
+          } else {
+            this.$.backdrop.close();
+          }
       },
       _addItem: function(e){
         var item = e.model.item;
         this.fire('add-selected-element', { item: item }, { bubbles: true });
         this.listIsVisible = false;
+        this.$.backdrop.close();
       },
       
     });

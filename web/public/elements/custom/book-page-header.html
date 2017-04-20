@@ -1,0 +1,143 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="/elements/custom/app-theme.html">
+<dom-module id="book-page-header">
+  <template>
+    <style include="app-theme">
+       :host {
+        display: block;
+        position: relative;
+      }
+      
+      .header-container {
+        text-align: right;
+        position: relative;
+        margin: 10px;
+      }
+      
+      .header-container>a {
+        background-color: darkgray;
+        padding: 5px 10px;
+        line-height: 24px;
+        border-radius: 20px;
+        color: white !important;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+      
+      paper-material {
+        background-color: var(--default-primary-color, blue);
+      }
+      
+      .header-container>a:hover {
+        background-color: slateblue;
+        color: gray;
+      }
+      
+      .header-title {
+        display: inline-block;
+        padding: 12px 10px;
+        font-size: 20px;
+      }
+      
+      .nav-buttons {
+        /* flex grid to lay the title out */
+        margin-left: 40px;
+        float: right;
+      }
+      
+      .nav-buttons a {
+        padding: 10px 1px 7px 1px;
+        display: inline-block;
+        color: white !important;
+        text-align: center;
+        min-width: 40px;
+        position: relative;
+      }
+      
+      .nav-buttons a.active {
+        border-bottom: 3px solid white;
+      }
+
+      .nav-buttons a span.count {
+        position: absolute;
+        left: 2px;
+        bottom: 2px;
+        padding: 2px;
+        border-radius: 6px;
+        min-width: 8px;
+        background: red;
+        color: white;
+        font-size: 8px;
+      }
+      
+      .nav-buttons a:hover {
+        color: #999 !important;
+      }
+    </style>
+
+    <paper-material elevation="2">
+
+      <!-- <paper-toolbar> -->
+      <!-- <paper-icon-button icon="maps:directions-railway"></paper-icon-button> -->
+      <a href="/book" class="header-title">
+        <span class="title">[[title]]</span>
+      </a>
+      <div class="nav-buttons">
+        <a href="/book/[[bookId]]/live" class$="{{activeClass('live')}}">
+          <iron-icon icon="create"></iron-icon>
+        </a>
+
+        <a href="/book/[[bookId]]/later" class$="{{activeClass('later')}}">
+          <span hidden$="{{noLaterItems}}" class="count">[[count]]</span>
+          <iron-icon icon="restore"></iron-icon>
+        </a>
+        <a href="/book/[[bookId]]/history" class$="{{activeClass('history')}}">
+          <iron-icon icon="today"></iron-icon>
+        </a>
+        <a href="/book/[[bookId]]/trash" class$="{{activeClass('trash')}}">
+          <iron-icon icon="delete"></iron-icon>
+        </a>
+      </div>
+      <!-- </paper-toolbar> -->
+    </paper-material>
+
+    <app-api id="appApi" book-id="[[bookId]]" on-later-count-loaded="_laterCountLoaded"></app-api>
+
+  </template>
+  <script>
+    Polymer({
+      is: 'book-page-header',
+      properties: {
+        bookId: {
+          type: String,
+          value: '',
+        },
+        title: {
+          type: String,
+          value: '',
+        },
+        path: {
+          type: String,
+          value: '',
+        }
+      },
+      ready: function () {
+        this.count = 0;
+        this.noLaterItems = true;
+        this.$.appApi.getLaterCount();
+        // replace with websockets
+        this.interval - setInterval(this._onInterval.bind(this), 2000);
+      },
+      activeClass: function(page){
+        return window.location.href.endsWith("/" + page) ? 'active' : '';
+      },
+      _onInterval: function () {
+        console.log('check for later items');
+        this.$.appApi.getLaterCount();
+      },
+      _laterCountLoaded: function (event) {
+        this.count = event.detail.count;
+        this.noLaterItems = this.count === 0;
+      },
+    });
+  </script>
+</dom-module>

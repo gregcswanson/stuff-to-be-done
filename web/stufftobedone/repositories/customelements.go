@@ -19,7 +19,7 @@ func NewCustomElementRepository(request *http.Request) *CustomElementRepository 
 
 func (r *CustomElementRepository) GetByName(elementName string) (domain.CustomElement, error) {
     customElement := domain.CustomElement{}
-    if elementName == "/element-to-do.html" {
+    if elementName == "/x-element-to-do.html" {
         customElement.Body = `
             <dom-module id="element-to-do">
                 <template>
@@ -65,7 +65,7 @@ func (r *CustomElementRepository) GetByName(elementName string) (domain.CustomEl
                 </script>
                 </dom-module>
         `
-    } else  if elementName == "/element-meeting.html" {
+    } else  if elementName == "/x-element-meeting.html" {
         customElement.Body = `
             <dom-module id="element-meeting">
                 <template>
@@ -132,10 +132,11 @@ func (r *CustomElementRepository) GetByName(elementName string) (domain.CustomEl
 
 func (r *CustomElementRepository) FindBookElements(bookID string) ([]domain.BookElement, error) {
     toDoElement := domain.BookElement{ Name: "To-do", ElementName: "element-to-do", Icon: "check-box" }
+    noteElement := domain.BookElement{ Name: "Note", ElementName: "element-note", Icon: "speaker-notes" }
     meetingElement := domain.BookElement{ Name: "Meeting", ElementName: "element-meeting", Icon: "book" }
     testElement := domain.BookElement{ Name: "Test", ElementName: "element-test", Icon: "bug-report" }
     
-    bookElements := []domain.BookElement{toDoElement, meetingElement, testElement}
+    bookElements := []domain.BookElement{toDoElement, noteElement, meetingElement, testElement}
     
     
     return bookElements, nil

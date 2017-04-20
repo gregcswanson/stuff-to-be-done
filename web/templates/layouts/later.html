@@ -1,8 +1,5 @@
 {{ template "bookheader" . }}
 
-<a href="/book/{{.bookID}}/live">today</a>
-<!-- <a href="/book/{{.bookID}}/{{.dayAsString}}/completed">not doing</a> -->
-
 <later-items 
     x-day-as-string="{{.dayAsString}}"
     book-id="{{.bookID}}">

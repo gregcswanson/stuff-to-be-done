@@ -3,35 +3,67 @@
 <dom-module id="container-element">
   <template>
     <style>
-      :host {
+       :host {
         display: block;
-        padding: 10px 0;
-        margin-top: 2px;
-        background-color: linen;
+        padding: 0 40px 0 0;
+        margin: 0;
+        background-color: #fff;
         color: black;
+        position: relative;
+        min-height: 40px;
       }
-      div.tools {
+      
+      paper-material.tools {
+        position: absolute;
+        top: 3px;
+        right: 40px;
         display: block;
         text-align: right;
+        background: #fff;
+        z-index: 1;
       }
+      
+      paper-button {
+        text-transform: none;
+      }
+      
+      paper-button.actions {
+        display: inline-block;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 35px;
+        min-width: 35px;
+        color: #999;
+        padding: 8px;
+      }
+
+      #backdrop {
+        z-index: 1;
+      }
+
     </style>
-    <div class="tools">
-        <paper-button on-tap="_delete" hidden$="{{isCompletedView}}">
-            <span>Delete</span>
-        </paper-button>
-        <paper-button on-tap="_doLater" hidden$="{{!showLater}}">
-            <span>Do later</span>
-        </paper-button>
-        <paper-button on-tap="_doToday" hidden$="{{!showToday}}">
-            <span>Do today</span>
-        </paper-button>
-        <paper-button on-tap="_reopen" hidden$="{{!canReopen}}">
-            <span>Re open</span>
-        </paper-button>
-    </div>
-    <!-- <p>Container for element [[childName]] - [[elementData]]</p> -->
+
     <div id="insertion"></div>
-    <!-- <sample-element><h2>not loaded</h2></sample-element> -->
+    <paper-button class="actions" on-tap="_toggleActions">
+      <iron-icon icon="more-vert"></iron-icon>
+    </paper-button>
+    <iron-overlay-backdrop id="backdrop" on-tap="_toggleActions"></iron-overlay-backdrop>
+
+    <paper-material class="tools" elevation="2" hidden$="{{!showActions}}">
+      <paper-button on-tap="_delete" hidden$="{{isCompletedView}}">
+        <span>Delete</span>
+      </paper-button>
+      <paper-button on-tap="_doLater" hidden$="{{!showLater}}">
+        <span>Do later</span>
+      </paper-button>
+      <paper-button on-tap="_doToday" hidden$="{{!showToday}}">
+        <span>Do today</span>
+      </paper-button>
+      <paper-button on-tap="_reopen" hidden$="{{!canReopen}}">
+        <span>Re open</span>
+      </paper-button>
+    </paper-material>
   </template>
 
 
@@ -74,89 +106,112 @@
         canReopen: {
           type: Boolean,
           value: false
+        },
+        showActions: {
+          type: Boolean,
+          value: false,
+        },
+      },
+      ready: function () {
+        var self = this;
+        //console.log('container-element ready', this.childName);
+        this.importHref(this.resolveUrl('/element/' + this.childName + '.html'));
+        var el = this.$.el = document.createElement(this.childName);
+        //console.log(el);
+        el.isCompleted = this.isCompleted;
+        el.isCompletedView = this.isCompletedView;
+        if (this.elementData && this.elementData.length > 0) {
+          var data = JSON.parse(this.elementData);
+          //console.log('container-element data', data);
+          el.elementData = data;
+        }
+        this.$.insertion.appendChild(el);
+        el.addEventListener("element-changed", function (ev) {
+          //console.log('element-changed fired', ev.detail);
+          self.elementData = JSON.stringify(ev.detail.data);
+          self.isCompleted = ev.detail.isCompleted;
+          this.fire('element-updated', { taskId: self.taskId, elementData: self.elementData, isCompleted: self.isCompleted }, { bubbles: true });
+        });
+
+
+        //Polymer.dom(this.$.insertion).appendChild(insertionElement);
+
+        /*
+        var self = this;
+        var el = this.$.el = document.createElement("another-element");
+
+        //set the initial value of child's foo property
+        el.foo = this.foo;
+        //listen to foo-changed event to sync with parent's foo property
+        el.addEventListener("foo-changed", function(ev){
+          self.foo = this.foo;
+        });
+
+        */
+
+
+      },
+
+      _toggleActions: function () {
+        this.showActions = !this.showActions;
+        if (this.showActions) {
+          this.$.backdrop.open();
+        } else {
+          this.$.backdrop.close();
         }
       },
-      ready: function(){
-            var self = this;
-            console.log('container-element ready', this.childName);
-            this.importHref(this.resolveUrl('/element/' + this.childName + '.html'));
-            var el = this.$.el = document.createElement(this.childName);
-            console.log(el);
-            el.isCompleted = this.isCompleted;
-            el.isCompletedView = this.isCompletedView;
-            if (this.elementData && this.elementData.length > 0) {
-              var data = JSON.parse(this.elementData);
-              console.log('container-element data', data);
-              el.elementData = data;
-            }
-            this.$.insertion.appendChild(el);
-            el.addEventListener("element-changed", function(ev){
-              console.log('element-changed fired', ev.detail);
-              self.elementData = JSON.stringify(ev.detail.data);
-              self.isCompleted = ev.detail.isCompleted;
-              this.fire('element-updated', { taskId: self.taskId, elementData: self.elementData, isCompleted: self.isCompleted }, { bubbles: true });
-            });
-
-            //Polymer.dom(this.$.insertion).appendChild(insertionElement);
-      
-            /*
-            var self = this;
-            var el = this.$.el = document.createElement("another-element");
-
-            //set the initial value of child's foo property
-            el.foo = this.foo;
-            //listen to foo-changed event to sync with parent's foo property
-            el.addEventListener("foo-changed", function(ev){
-              self.foo = this.foo;
-            });
-
-            */
-
-          
-      },
-      isCompletedChanged: function(newValue) {
-        console.log('isCompleted changed',  newValue);
+      isCompletedChanged: function (newValue) {
+        //console.log('isCompleted changed', newValue);
         if (this.$.el) {
           this.$.el.isCompleted = newValue;
         }
       },
-      isCompletedViewChanged: function(newValue){
-        console.log('isCompletedView changed',  newValue);
+      isCompletedViewChanged: function (newValue) {
+        //console.log('isCompletedView changed', newValue);
         if (this.$.el) {
           this.$.el.isCompletedView = newValue;
         }
       },
-      dataChanged: function(newValue) {
+      dataChanged: function (newValue) {
+        this.showActions = false;
         //console.log('data changed', newValue);
         if (this.$.el) {
           var data = JSON.parse(this.elementData);
-          console.log('container-element data changed', data);
+          //console.log('container-element data changed', data);
           this.$.el.elementData = data;
         }
       },
-      attached: function(){
-          //console.log('container-element attached');
-           // var insertionElement = document.createElement('sample-element');
-           // console.log(insertionElement);
-           // Polymer.dom(this.$.insertion).appendChild(insertionElement);
+      attached: function () {
+        //console.log('container-element attached');
+        // var insertionElement = document.createElement('sample-element');
+        // console.log(insertionElement);
+        // Polymer.dom(this.$.insertion).appendChild(insertionElement);
       },
-      _delete: function(){
+      _delete: function () {
+        this.showActions = false;
+        this.$.backdrop.close();
         var data = { taskId: this.taskId, elementData: this.elementData, isCompleted: this.isCompleted };
-        console.log('element delete', data)
-          this.fire('element-delete', data, { bubbles: true });
+        //console.log('element delete', data)
+        this.fire('element-delete', data, { bubbles: true });
       },
-      _doLater: function(){
+      _doLater: function () {
+        this.showActions = false;
+        this.$.backdrop.close();
         var data = { taskId: this.taskId, elementData: this.elementData, isCompleted: this.isCompleted };
-        console.log('element do later', data)
-          this.fire('element-do-later', data, { bubbles: true });
+        //console.log('element do later', data)
+        this.fire('element-do-later', data, { bubbles: true });
       },
-      _doToday: function(){
+      _doToday: function () {
+        this.showActions = false;
+        this.$.backdrop.close();
         var data = { taskId: this.taskId, elementData: this.elementData, isCompleted: this.isCompleted };
-        console.log('element do today', data)
-          this.fire('element-do-today', data, { bubbles: true });
+        //console.log('element do today', data)
+        this.fire('element-do-today', data, { bubbles: true });
       },
-      _reopen: function() {
-          console.log('reopen');
+      _reopen: function () {
+        this.showActions = false;
+        this.$.backdrop.close();
+        //console.log('reopen');
         this.fire('element-updated', { taskId: this.taskId, elementData: this.elementData, isCompleted: false }, { bubbles: true });
       },
     });

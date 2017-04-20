@@ -1,0 +1,81 @@
+<link rel="import" href="/elements/custom/app-theme.html">
+<dom-module id="element-to-do">
+    <template>
+        <style include="app-theme">
+             :host {
+                display: block;
+                position: relative;
+                background-color: white;
+                color: darkslategray;
+                padding: 0;
+            }
+            
+            div.to-do-container {
+                width: 100%;
+                position: relative;
+                display: block;
+            }
+            
+            div.to-do-container>paper-checkbox {
+                position: absolute;
+                display: block;
+                top: 11px;
+                left: 11px;
+                width: 30px;
+                height: 30px;
+            }
+            
+            div.to-do-container>p {
+                padding: 11px 0;
+                display: block;
+                white-space: pre-line;
+                margin: 0 40px;
+                color: #999;
+            }
+            
+            div.to-do-container>paper-textarea {
+                display: block;
+                margin: 0 40px 0 40px;
+            }
+        </style>
+        <div class="to-do-container" hidden$="{{!isCompletedView}}">
+            <paper-checkbox name="iscompleted" checked="{{isCompleted}}" on-change="_completeChanged">
+            </paper-checkbox>
+            <p>{{elementData.text}}</p>
+        </div>
+        <div class="to-do-container" hidden$="{{isCompletedView}}">
+            <paper-checkbox name="iscompleted" checked="{{isCompleted}}" on-change="_completeChanged">
+            </paper-checkbox>
+            <paper-textarea type="text" placeholder="To-do..." value="{{elementData.text::input}}" on-change="_textChanged" no-label-float></paper-textarea>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'element-to-do',
+            properties: {
+                elementData: {
+                    type: Object,
+                    value: function () {
+                        return { text: '', status: 'OPEN' }
+                    },
+                },
+                isCompleted: {
+                    type: Boolean,
+                    value: false,
+                },
+                isCompletedView: {
+                    type: Boolean,
+                    value: false,
+                },
+            },
+            _completeChanged: function (event) {
+                var result = { data: this.elementData, isCompleted: this.isCompleted };
+                this.fire('element-changed', result, { bubbles: true });
+            },
+            _textChanged: function (event) {
+                var result = { data: this.elementData, isCompleted: this.isCompleted };
+                this.fire('element-changed', result, { bubbles: true });
+            },
+        });
+    </script>
+</dom-module>

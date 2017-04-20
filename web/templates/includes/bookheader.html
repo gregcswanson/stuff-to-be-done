@@ -1,12 +1,18 @@
 {{ define "bookheader" }}
 <!doctype html>
+
 <head>
-	<title>Stuff To Be Done</title>
+    <title>Stuff To Be Done</title>
     <link rel="stylesheet" href="/stylesheets/site.css" />
     <script src="/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
     <link rel="import" href="/elements/elements.html">
     <script src='/js/app.js'></script>
+    <link rel="import" href="/elements/custom/app-theme.html">
+
 </head>
+
 <body>
-<h1>{{.title}}</h1>
-{{ end }}
+
+    <!-- <h1 class="page-title">{{.title}}</h1> -->
+    <book-page-header title={{.title}} book-id="{{.bookID}}"></book-page-header>
+    {{ end }}

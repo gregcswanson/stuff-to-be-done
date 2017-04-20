@@ -95,15 +95,18 @@ func (r *TaskUseCases) DoOnDate(bookID string, taskId string, dateAsString strin
   // validate element and book
   task, err := r.TaskRepository.FindById(bookID, taskId)
   if err != nil || task.BookID != bookID {
+		log.Println("BookID is not valid")
     return task, day, errors.New("BookID is not valid")
   }
   
-  if !task.LaterCanUpdate() {
-    return task, day, errors.New("Task cannot be updated")
-  }
+  //if !task.LaterCanUpdate() {
+	//	log.Println("Task cannot be updated")
+  //  return task, day, errors.New("Task cannot be updated")
+  //}
 
   convertedDate, err := common.ConvertStringToDates(dateAsString)
   if err != nil {
+		log.Println("Date " + dateAsString + " is not valid")
     return task, day, errors.New("Date " + dateAsString + " is not valid")
   }
 	log.Println(convertedDate)
@@ -113,6 +116,17 @@ func (r *TaskUseCases) DoOnDate(bookID string, taskId string, dateAsString strin
   task.UpdatedBy = r.User.ID
 	task.IsDeleted = false
 
+	if (task.CurrentDate != 0) {
+		// close the current date
+		log.Println("close the current day")
+		currentDay, err := r.DayRepository.FindByTaskId(bookID, task.ID,  task.CurrentDate)
+		currentDay.Data = data
+		currentDay.IsActioned = true
+		currentDay, err = r.DayRepository.Update(currentDay)
+		if err != nil {
+      return task, currentDay, err
+    }
+	}
 
   // create or find the day record
   day, err = r.DayRepository.FindByTaskId(bookID, task.ID,  convertedDate.DateAsInt)

@@ -2,50 +2,51 @@
 <dom-module id="trash-items">
   <template>
     <style>
-        :host {
-            display: block;
-        }
+       :host {
+        display: block;
+      }
+      
+      paper-material {
+        margin: 10px;
+        background: white;
+      }
 
-        paper-material.no-items {
-          padding: 10px;
-          margin: 10px;
-          background: white;
-        }
+      paper-material.no-items {
+        padding: 10px;
+      }
+      
+      paper-material.no-items p {
+        text-align: center;
+      }
 
-        paper-material.no-items p {
-          text-align: center;
-        }
-
-        add-element {
-          display: block;
-          position: absolute;
-          bottom: 10px;
-          right: 10px;
-        }
-
+      container-element:not(:first-child) { 
+        border-top: 1px dotted #bbb;
+      }
+      
+      add-element {
+        display: block;
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+      }
     </style>
 
     <!-- items -->
-    <template is="dom-repeat" items="{{items}}">
-      <container-element child-name="[[item.ElementName]]" 
-          task-id="[[item.ID]]"
-          is-completed="[[item.IsCompleted]]"
-          show-today
-          is-completed-view=true 
-          element-data="[[item.Data]]"
-          on-element-do-today="_elementDoToday">
-      </container-element>
-    </template>
+    <paper-material elevation="1" hidden$="{{isEmpty}}">
+      <template is="dom-repeat" items="{{items}}">
+        <container-element child-name="[[item.ElementName]]" task-id="[[item.ID]]" is-completed="[[item.IsCompleted]]" show-today
+          is-completed-view=true element-data="[[item.Data]]" on-element-do-today="_elementDoToday">
+        </container-element>
+      </template>
+    </paper-material>
 
     <paper-material class="no-items" elevation="1" hidden$="{{!isEmpty}}">
       <p>No items</p>
     </paper-material>
 
     <!-- ajax calls -->
-    <app-api id="appApi" book-id="[[bookId]]" 
-        on-trash-loaded="_trashLoaded"
-        on-task-do-today-completed="_taskDoTodayCompleted"></app-api>
-    
+    <app-api id="appApi" book-id="[[bookId]]" on-trash-loaded="_trashLoaded" on-task-do-today-completed="_taskDoTodayCompleted"></app-api>
+
   </template>
   <script>
     Polymer({
@@ -65,7 +66,7 @@
         },
         items: {
           type: Array,
-          value: function() {
+          value: function () {
             return [];
           },
           notify: true
@@ -78,33 +79,33 @@
       observers: [
         'itemsAddedOrRemoved(items.splices)'
       ],
-      ready: function(){
+      ready: function () {
         console.log('trash ready');
         this.$.appApi.getTrash();
       },
-      _trashLoaded: function(event){
+      _trashLoaded: function (event) {
         this.items = event.detail.items;
       },
-      itemsAddedOrRemoved: function(changeRecord){
-        console.log('itemsAddedOrRemoved',changeRecord, this.items.length);
+      itemsAddedOrRemoved: function (changeRecord) {
+        console.log('itemsAddedOrRemoved', changeRecord, this.items.length);
         this.isEmpty = this.items.length == 0;
       },
-      _elementDoToday: function(ev){
-          var data = ev.detail;
-          data.dayId = '';
-          this.$.appApi.doTaskToday(data);
+      _elementDoToday: function (ev) {
+        var data = ev.detail;
+        data.dayId = '';
+        this.$.appApi.doTaskToday(data);
       },
-      _taskDoTodayCompleted: function(ev){
-          var data = ev.detail.item;
-          console.log('_taskDoLaterCompleted', data);
-          var taskID = data.TaskID;
-          var item = this.items.find(function(f){return f.ID == taskID});
-          if (item) {
-            var index = this.items.indexOf(item);
-            this.splice('items', index, 1);
-          }
+      _taskDoTodayCompleted: function (ev) {
+        var data = ev.detail.item;
+        console.log('_taskDoLaterCompleted', data);
+        var taskID = data.TaskID;
+        var item = this.items.find(function (f) { return f.ID == taskID });
+        if (item) {
+          var index = this.items.indexOf(item);
+          this.splice('items', index, 1);
+        }
       },
-      
+
     });
   </script>
 </dom-module>

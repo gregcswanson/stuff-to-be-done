@@ -39,6 +39,21 @@ func BookLaterHandler(c *gin.Context) {
   }
 }
 
+func BookLaterCountHandler(c *gin.Context) {
+  bookID := c.Param("bookId")
+  r := repositories.NewTaskRepository(c.Request)
+  laterItems, err := r.Later(bookID)
+  if err != nil {
+    c.JSON(500, gin.H{
+      "message": err,
+    })
+  } else {
+    c.JSON(http.StatusOK, gin.H{
+        "data": len(laterItems),
+    })
+  }
+}
+
 func BookLaterPostHandler(c *gin.Context) {
   // setup the required repositories
   user := GetAppUser(c)

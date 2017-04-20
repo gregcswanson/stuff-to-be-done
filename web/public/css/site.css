@@ -9,6 +9,18 @@ h1 {
     margin: 20px;
 }
 
+h1.page-title {
+    font-size: 14px;
+    display: block;
+    text-align: center;
+    color: #333;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin: 15px;
+}
+
 .header-title {
     text-decoration: none;
     color: white;

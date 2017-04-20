@@ -1,0 +1,51 @@
+<dom-module id="element-meeting">
+                <template>
+                    <style>
+                    :host {
+                        display: block;
+                    }
+                    p {
+                        background-color: blue;
+                        color: white;
+                        margin: 20px;
+                    }
+                    p.meeting-line {
+                        background-color: lightblue;
+                        color: white;
+                        margin: 5px;
+                    }
+                    </style>
+                    <p>Meeting</p>
+                    <template is="dom-repeat" items="[[elementData.items]]">
+                        <p class="meeting-line">[[item.text]]</p>
+                    </template>
+                    <input type="text" placeholder="add meeting note">
+                    <paper-button on-tap="save">
+                    <span>test</span>
+                    </paper-button>
+                </template>
+
+                <script>
+                    Polymer({
+
+                    is: 'element-meeting',
+
+                    properties: {
+                        elementData: {
+                            type: Object,
+                            value: {items: []},
+                        },
+                        isCompleted: {
+                            type: Boolean,
+                            value: false
+                        }
+                    },
+                    save: function(){
+                        var result =  {data: this.elementData, isCompleted: this.isCompleted};
+                        console.log('element-changed', result);
+                        this.fire('element-changed', result, { bubbles: false });
+                    },
+
+                    });
+                </script>
+                </dom-module>

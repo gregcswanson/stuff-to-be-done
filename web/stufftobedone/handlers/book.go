@@ -28,8 +28,9 @@ func BookLiveHander(c *gin.Context) {
   bookID := c.Param("book")
   
   c.HTML(http.StatusOK, "book.html", gin.H{
-        "title": "Current",
+        "title": "Today",
         "logouturl" : user.LogoutUrl,
+        "isLoggedIn": true,
         "bookID": bookID,
   })
 }

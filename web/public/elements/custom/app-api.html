@@ -8,22 +8,28 @@
     <!-- ajax calls -->
     <iron-ajax
         id="ajaxGetCompletedItems"
-        url="http://localhost:8080/api/v1/book/[[bookId]]/completed"
+        url="/api/v1/book/[[bookId]]/completed"
         handle-as="json"
         on-response="_ajaxGetCompletedItemsResponse">
     </iron-ajax>
     <iron-ajax
         id="ajaxGetTrash"
-        url="http://localhost:8080/api/v1/book/[[bookId]]/trash"
+        url="/api/v1/book/[[bookId]]/trash"
         handle-as="json"
         on-response="_ajaxGetTrashResponse">
+    </iron-ajax>
+    <iron-ajax
+        id="ajaxGetLaterCount"
+        url="/api/v1/book/[[bookId]]/latercount"
+        handle-as="json"
+        on-response="_ajaxGetLaterCountResponse">
     </iron-ajax>
     <iron-ajax
         id="ajaxPutDoTaskLater"
         x-content-type="application/json"
         content-type="application/x-www-form-urlencoded"
         method="PUT"
-        url="http://localhost:8080/api/v1/book/[[bookId]]/dolater/[[currentTaskId]]"
+        url="/api/v1/book/[[bookId]]/dolater/[[currentTaskId]]"
         handle-as="json"
         on-response="_ajaxPutDoTaskLaterResponse">
     </iron-ajax>
@@ -32,7 +38,7 @@
         x-content-type="application/json"
         content-type="application/x-www-form-urlencoded"
         method="PUT"
-        url="http://localhost:8080/api/v1/book/[[bookId]]/move/[[currentTaskId]]"
+        url="/api/v1/book/[[bookId]]/move/[[currentTaskId]]"
         handle-as="json"
         on-response="_ajaxDoTodayResponse"></iron-ajax>
     <iron-ajax
@@ -40,7 +46,7 @@
         x-content-type="application/json"
         content-type="application/x-www-form-urlencoded"
         method="DELETE"
-        url="http://localhost:8080/api/v1/book/[[bookId]]/task/[[currentTaskId]]"
+        url="/api/v1/book/[[bookId]]/task/[[currentTaskId]]"
         handle-as="json"
         on-response="_ajaxDeleteTaskResponse"></iron-ajax>
   </template>
@@ -83,6 +89,13 @@
         _ajaxGetTrashResponse: function(data) {
             var items = data.detail.response.data;
             this.fire('trash-loaded', { items: items }, { bubbles: true });
+        },
+        getLaterCount: function(){
+            this.$.ajaxGetLaterCount.generateRequest();
+        },
+        _ajaxGetLaterCountResponse: function(data){
+            var count = data.detail.response.data;
+            this.fire('later-count-loaded', { count: count }, { bubbles: true });
         },
         doTaskLater: function(item){
             console.log('app-api: do task later', item);

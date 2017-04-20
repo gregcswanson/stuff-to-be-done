@@ -1,0 +1,66 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<dom-module id="later-link">
+  <template>
+    <style>
+       :host {
+        display: inline-block;
+      }
+      
+      a {
+        background-color:darkgray;
+        padding: 5px 10px;
+        line-height: 20px;
+        border-radius: 20px;
+        color: white !important;
+        text-decoration: none;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+
+      a.active {
+        background-color: red;
+      }
+      
+      a:hover {
+        background-color:slateblue;
+        color: gray;
+      }
+
+    </style>
+
+    <a href="/book/[[bookId]]/later" class$="{{activeClass(count)}}">
+      <span hidden$="{{noLaterItems}}">[[count]]&nbsp;</span>
+      <iron-icon icon="restore"></iron-icon>
+    </a>
+
+    <app-api id="appApi" book-id="[[bookId]]" on-later-count-loaded="_laterCountLoaded"></app-api>
+  </template>
+  <script>
+    Polymer({
+      is: 'later-link',
+      properties: {
+        bookId: {
+          type: String,
+          value: '',
+        },
+      },
+      ready: function () {
+        this.count = 0;
+        this.noLaterItems = true;
+        this.$.appApi.getLaterCount();
+        // replace with websockets
+        this.interval - setInterval(this._onInterval.bind(this), 2000);
+      },
+      activeClass: function(count){
+        return count > 0 ? 'active' : '';
+      },
+      _onInterval: function () {
+        console.log('check for later items');
+        this.$.appApi.getLaterCount();
+      },
+      _laterCountLoaded: function (event) {
+        this.count = event.detail.count;
+        this.noLaterItems = this.count === 0;
+      },
+    });
+  </script>
+</dom-module>

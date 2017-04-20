@@ -35,6 +35,7 @@ func init() {
     apiV1book.PUT("/later/:taskId/dotoday", handlers.BookLaterDoTodayHandler)
     apiV1book.PUT("/later/:taskId", handlers.BookLaterPutHandler)
     apiV1book.DELETE("/later/:taskId", handlers.BookLaterDeleteHandler)
+    apiV1book.GET("/latercount", handlers.BookLaterCountHandler)
     // completed actions
     //apiV1book.GET("/completed", handlers.ApiCompletedHandler) // remove
     // trash handlers
@@ -65,7 +66,7 @@ func init() {
     book.GET("/live", handlers.BookLiveHander) // will replace the sub pages
     book.GET("/trash", handlers.TrashHandler)
     book.GET("/later", handlers.LaterHandler)
-    //book.GET("/history", handlers.LaterHandler)
+    book.GET("/history", handlers.HistoryHandler)
       // add a middleware to setup the book context
       
       //book.GET("/:day/later", handlers.LaterHandler)
