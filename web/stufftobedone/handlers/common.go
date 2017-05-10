@@ -17,14 +17,14 @@ func ErrorPage(c *gin.Context, err error) {
   // return the result
   c.HTML(http.StatusOK, "error.html", gin.H{
     "title": "Oh crap, something went wrong",
-    "message": err,
+    "message": err.Error(),
   })
 }
 
 func JsonError(c *gin.Context, err error) {
-  log.Println(err)
+  log.Println("JsonError: " + err.Error())
   c.JSON(500, gin.H{
-      "message": err,
+      "message": err.Error(),
     })
 }
 

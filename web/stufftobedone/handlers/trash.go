@@ -3,7 +3,8 @@ package handlers
 import (
   "net/http"
   "github.com/gin-gonic/gin"
-  "stufftobedone/repositories"
+  //"stufftobedone/repositories"
+  "stufftobedone/usecases"
 )
 
 func TrashHandler(c *gin.Context) {
@@ -17,17 +18,32 @@ func TrashHandler(c *gin.Context) {
 }
 
 func ApiTrashGetHandler(c *gin.Context) {
-  // get a list of copmlete elements for this book
+  taskUseCases := usecases.NewTaskUseCases(c);
   bookID := c.Param("bookId")
-  r := repositories.NewTaskRepository(c.Request)
-  items, err := r.Deleted(bookID)
+
+  groupedDayTasks, err := taskUseCases.FindTrashGroupedByDay(bookID)
+  if err != nil {
+    JsonError(c, err)
+  } else {
+    c.JSON(http.StatusOK, gin.H{
+        "data": groupedDayTasks,
+    })
+  }
+}
+
+func ApiTrashEmptyHandler(c *gin.Context) {
+  taskUseCases := usecases.NewTaskUseCases(c);
+
+  bookID := c.Param("bookId")
+  
+  err := taskUseCases.EmptyTrash(bookID)
   if err != nil {
     c.JSON(500, gin.H{
       "message": err,
     })
   } else {
     c.JSON(http.StatusOK, gin.H{
-        "data": items,
+        "data": "OK",
     })
   }
 }

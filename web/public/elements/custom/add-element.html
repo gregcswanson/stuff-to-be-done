@@ -1,7 +1,8 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="/elements/custom/app-theme.html">
 <dom-module id="add-element">
   <template>
-    <style>
+    <style include="app-theme">
         :host {
             display: block;
         }
@@ -19,7 +20,12 @@
           position: absolute;
           bottom: 20px;
           right: 20px;
-          --paper-fab-background: #607d8b;
+          color: white !important;
+          --paper-fab-background: var(--accent-color, #607d8b);
+        }
+
+        paper-icon-item span {
+            font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
         }
     </style>
     
@@ -30,7 +36,9 @@
         <paper-listbox>
             <template is="dom-repeat" items="{{elementTypes.data}}">
                 <paper-icon-item on-tap="_addItem">
-                <iron-icon icon="[[item.Icon]]" item-icon></iron-icon>[[item.Name]]</paper-icon-item>
+                  <iron-icon icon="[[item.Icon]]" item-icon></iron-icon>
+                  <span>[[item.Name]]</span>
+                </paper-icon-item>
             </template>  
         </paper-listbox>
     </paper-material>

@@ -5,6 +5,7 @@ import (
   "github.com/gin-gonic/gin"
   "stufftobedone/repositories"
   "stufftobedone/domain"
+  "stufftobedone/usecases"
   "time"
   "log"
   "strconv"
@@ -21,6 +22,20 @@ func LaterHandler(c *gin.Context) {
         "bookID": bookID,
   })
 }
+
+func ApiLaterHandler(c *gin.Context) {
+  taskUseCases := usecases.NewTaskUseCases(c);
+  bookID := c.Param("bookId")
+
+  groupedDayTasks, err := taskUseCases.FindTasksSetAsLaterGroupedByDay(bookID)
+  if err != nil {
+    JsonError(c, err)
+  } else {
+    c.JSON(http.StatusOK, gin.H{
+        "data": groupedDayTasks,
+    })
+  }
+} 
 
 func BookLaterHandler(c *gin.Context) {
   // get a list of available elements for this book
@@ -55,28 +70,28 @@ func BookLaterCountHandler(c *gin.Context) {
 }
 
 func BookLaterPostHandler(c *gin.Context) {
-  // setup the required repositories
-  user := GetAppUser(c)
-  // bookRepository := repositories.NewBookRepository(c.Request)
-  taskRepository := repositories.NewTaskRepository(c.Request)
-
-  // get the parameters
+  taskUseCases := usecases.NewTaskUseCases(c);
   bookID := c.Param("bookId")
   elementName := c.PostForm("elementName")
-
-  // validate element and book
-
-  task, err := taskRepository.Create(elementName, bookID, 0, "", user.ID)
+  dayAsString := c.PostForm("dayAsString")
+  dayTask, err := taskUseCases.NewTaskOnDate(bookID, dayAsString, elementName)
   if err != nil {
     c.JSON(500, gin.H{
       "message": err,
     })
+    return
+  }
+  dayTask, err = taskUseCases.DoLater(bookID, dayTask.TaskID, dayTask.DayID, dayTask.Data)
+  if err != nil {
+    c.JSON(500, gin.H{
+      "message": err,
+    })
+    return
   } else {
     c.JSON(http.StatusOK, gin.H{
-        "data": task,
+        "data": dayTask,
     })
   }
-
 }
 
 func BookLaterPutHandler(c *gin.Context) {

@@ -10,11 +10,16 @@ type Task struct {
 	Data string `datastore:",noindex"`
 	ElementName string
 	ProjectID string
+	Queue string
+	Priority int
+	ParentTaskID string // The task this record was triggered from, i.e. part of meeting turned into a todo
 	CurrentDate int // the most recent date this task is assigned to
+	LastDayID string // ths last day this task was attached to 
 	IsCompleted bool
 	IsDeleted bool
 	DueDate time.Time `datastore:"-"`
 	DueDateAsInt int // store the date as int for sorting, no date is 99999999 so that it is last
+	Sort int
 	Created time.Time
 	CreatedBy string `datastore:",noindex"`
   	Updated time.Time //`datastore:",noindex"` 

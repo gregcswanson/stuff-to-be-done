@@ -2,35 +2,66 @@
 <link rel="import" href="/elements/custom/app-theme.html">
 <dom-module id="history-items">
   <template>
-    <style  include="app-theme">
-        :host {
-            display: block;
-        }
- 
-        p.selected-day {
-          display: block;
-          text-align: center;
-          color: #333;
-        }
-        .date-container {
-          display: block;
-          text-align: center;
-        }
+    <style include="app-theme">
+       :host {
+        display: block;
+      }
+      
+      p.selected-day {
+        display: block;
+        text-align: center;
+        color: #333;
+      }
+      
+      .date-container {
+        display: block;
+        text-align: center;
+      }
+      
+      paper-material {
+        margin: 3px 3px;
+        display: inline-block;
+        background-color: white;
+      }
+      
+      .container {
+        display: flex;
+        flex-flow: row;
+        align-items: flex-start;
+      }
+      
+      day-items {
+        flex-grow: 1;
+      }
 
-        paper-material{
-          margin: 3px 3px;
-          display: inline-block;
-          background-color: white;
+      .date-selector {
+        text-align: center;
+        padding: 10px;
+      }
+      
+      @media all and (max-width: 1100px) {
+        .container {
+          flex-flow: column;
+          justify-content: center;
+          align-items: stretch;
         }
-
+      }
     </style>
-    <div class="date-container">
+    <div class="container">
+      <div class="date-selector">
+        <paper-material elevation="1">
+          <paper-date-picker date="[[date]]" on-date-changed="_dateChanged"></paper-date-picker>
+        </paper-material>
+      </div>
+      <day-items day-as-string="[[dayAsString]]" book-id="[[bookId]]"></day-items>
+    </div>
+    <!-- <div class="date-container">
       <paper-material elevation="1">
-        <paper-date-picker date="[[date]]" on-date-changed="_dateChanged"></paper-date-picker> 
+        <paper-date-picker date="[[date]]" on-date-changed="_dateChanged"></paper-date-picker>
       </paper-material>
     </div>
-    
-    <day-items day-as-string="[[dayAsString]]" book-id="[[bookId]]"></day-items>
+   -->
+
 
   </template>
   <script>
@@ -43,7 +74,7 @@
         },
         date: {
           type: Date,
-          value: function(){
+          value: function () {
             var date = new Date();
             return this._addDays(date, -1);
           }
@@ -57,25 +88,23 @@
           value: '',
         },
       },
-      ready: function(){
+      ready: function () {
         this._selectDate(this.date);
       },
-      _dateChanged: function(ev){
-        if (this.dayAsString !== '') 
-        {
+      _dateChanged: function (ev) {
+        if (this.dayAsString !== '') {
           console.log('_dateChanged', ev.detail.value);
           this._selectDate(new Date(ev.detail.value));
         }
-        
+
       },
-      _selectDate: function(date){
-        if (this.dayAsString === '' || this._dateToInt(this.date) != this._dateToInt(date))
-        {
+      _selectDate: function (date) {
+        if (this.dayAsString === '' || this._dateToInt(this.date) != this._dateToInt(date)) {
           this.date = new Date(date);
           this.dayAsString = this._dateToInt(date).toString();
         }
       },
-      _addDays: function(date, days){
+      _addDays: function (date, days) {
         var result = new Date(date);
         result.setDate(result.getDate() + days);
         return result;
@@ -88,7 +117,7 @@
         if (date.getDate() < 10) result += "0";
         result += date.getDate().toString();
         return result;
-        },
+      },
     });
   </script>
 </dom-module>

@@ -1,89 +1,50 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<dom-module id="day-items">
+<dom-module id="task-items">
   <template>
     <style>
        :host {
         display: block;
       }
       
-      paper-material {
-        padding: 0;
-        margin: 10px;
-        background: white;
-      }
-      
-      paper-material.no-items p {
-        text-align: center;
-        padding: 20px;
-      }
-      
       container-element:not(:first-child) {
         border-top: 1px dotted #bbb;
       }
-
-       p.loading {
-        padding: 20px;
-        text-align: center;
-        font-style: italic;
-        color: #777;
-      }
       
-      add-element {
-        display: block;
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        z-index: 1;
-      }
     </style>
+    <!-- items -->
+      <template is="dom-repeat" items="[[items]]">
+        <container-element id="[[item.DayID]]" 
+          child-name="[[item.ElementName]]" 
+          task-id="[[item.TaskID]]" 
+          day-id="[[item.DayID]]"
+          book-id="[[bookId]]"
+          comment-text="[[item.Comment]]"
+          is-completed="[[item.IsCompleted]]" 
+          show-later=[[showLater]]
+          show-today=[[canShowToday]] 
+          can-reopen=[[item.CanReopen]] 
+          is-completed-view={{isCompletedView}} 
+          element-data="[[item.Data]]"
+          on-element-updated="_elementUpdated" 
+          on-element-delete="_elementDelete" 
+          on-element-do-later="_elementDoLater" 
+          on-element-do-today="_elementDoToday">
+        </container-element>
+      </template>
 
-
-    <!-- loading -->
-    <p class="loading" hidden$="{{!isLoading}}">Loading...</p>
-
-    <div hiddem$="{{isLoading}}">
-      <!-- items -->
-      <paper-material elevation="1" hidden$="{{isEmpty}}">
-        <template is="dom-repeat" items="{{items}}">
-          <container-element id="[[item.DayID]]" child-name="[[item.ElementName]]" task-id="[[item.TaskID]]" day-id="[[item.DayID]]"
-            book-id="[[bookId]]" comment-text="[[item.Comment]]" is-completed="[[item.IsCompleted]]" show-later show-today=[[canShowToday]]
-            can-reopen=[[item.CanReopen]] is-completed-view={{item.IsCompleted}} element-data="[[item.Data]]" on-element-updated="_elementUpdated"
-            on-element-delete="_elementDelete" on-element-do-later="_elementDoLater" on-element-do-today="_elementDoToday">
-          </container-element>
-        </template>
-      </paper-material>
-
-      <paper-material class="no-items" elevation="1" hidden$="{{!isEmpty}}">
-        <p>No items</p>
-      </paper-material>
-
-      <!-- action button -->
-      <add-element book-id="[[bookId]]" on-add-selected-element="_addElement"></add-element>
-    </div>
-    <!-- undo button -->
-    <template is="dom-if" if="{{undoDeleteTaskId}}">
-      <paper-button on-tap="_restoreItem">
-        Undo last delete
-      </paper-button>
-    </template>
     <!-- ajax calls -->
-    <iron-ajax id="ajaxGetDayItems" url="/api/v1/book/[[bookId]]/day/[[dayAsString]]" handle-as="json" on-response="_ajaxGetDayItemsResponse"></iron-ajax>
-
-    <iron-ajax id="ajaxCreateDayItem" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="POST"
-      url="/api/v1/book/[[bookId]]/day/[[dayAsString]]" handle-as="json" on-response="_ajaxCreateDayItemPostResponse"></iron-ajax>
+    
     <iron-ajax id="ajaxUpdateDayItem" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="PUT"
       url="/api/v1/book/[[bookId]]/day/[[currentTaskId]]" handle-as="json" on-response="_ajaxUpdateDayItemResponse"></iron-ajax>
     <iron-ajax id="ajaxDoLaterDayItem" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="PUT"
       url="/api/v1/book/[[bookId]]/dolater/[[currentTaskId]]" handle-as="json" on-response="_ajaxDoLaterResponse"></iron-ajax>
-    <iron-ajax id="laterRestore" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="PUT"
-      url="/api/v1/book/[[bookId]]/later/[[currentTaskId]]/restore" handle-as="json" on-response="_laterRestoreResponse"></iron-ajax>
 
     <app-api id="appApi" book-id="[[bookId]]" on-task-deleted="_taskDeleted" on-task-do-today-completed="_taskDoTodayCompleted"></app-api>
 
   </template>
   <script>
     Polymer({
-      is: 'day-items',
+      is: 'task-items',
       properties: {
         dayAsString: {
           type: String,
@@ -98,14 +59,6 @@
           type: String,
           value: '',
         },
-        currentTaskId: {
-          type: String,
-          value: '',
-        },
-        undoDeleteTaskId: {
-          type: String,
-          value: '',
-        },
         items: {
           type: Array,
           value: function () {
@@ -117,40 +70,32 @@
           type: Boolean,
           value: true
         },
-        isLoading: {
+        openOnly: {
           type: Boolean,
-          value: true
+          value: false
+        },
+        showLater: {
+          type: Boolean,
+          value: false
         },
         canShowToday: {
           type: Boolean,
           value: false
-        }
+        },
+        isCompletedView: {
+          type: Boolean,
+          value: false
+        },
       },
       observers: [
         'itemsAddedOrRemoved(items.splices)'
       ],
       _onDayAsStringChanged: function (newValue) {
-        if (newValue !== '') {
-          this.items = [];
-          this.isLoading = true;
-          this.$.ajaxGetDayItems.generateRequest();
-        }
-        // get todayAsString
         this.todayAsString = this._dateToInt(new Date()).toString();
         this.canShowToday = this.todayAsString !== this.dayAsString;
       },
-      reloadItems: function () {
-        this.isLoading = true;
-        this.$.ajaxGetDayItems.generateRequest();
-      },
       itemsAddedOrRemoved: function (changeRecord) {
         this.isEmpty = this.items.length == 0;
-      },
-      _addElement: function (ev) {
-        var item = ev.detail.item;
-        // ajax request to create default object
-        this.$.ajaxCreateDayItem.body = { elementName: item.ElementName };
-        this.$.ajaxCreateDayItem.generateRequest();
       },
       _elementDoLater: function (ev) {
         var data = ev.detail;
@@ -162,30 +107,16 @@
           this.$.ajaxDoLaterDayItem.generateRequest();
         }
       },
-      _restoreItem: function () {
-        this.currentTaskId = this.undoDeleteTaskId;
-        this.$.laterRestore.body = { ID: this.undoDeleteTaskId };
-        this.$.laterRestore.generateRequest();
-      },
       _ajaxGetDayItemsResponse: function (data) {
         this.items = data.detail.response.data;
-        this.isLoading = false;
       },
       _onCreatedTimeout: function () {
         // send the set inital focus request
         this.fire('set-initial-focus', this.justAdded);
       },
-      _ajaxCreateDayItemPostResponse: function (data) {
-        // check for error codes?
-        this.push('items', data.detail.response.data);
-        // fire after updated
-        this.justAdded = { taskId: data.detail.response.data.TaskID, text: '' };
-        setTimeout(this._onCreatedTimeout.bind(this), 100);
-
-      },
       _ajaxUpdateDayItemResponse: function (data) {
         var result = data.detail.response.data;
-        //console.log('_ajaxUpdateDayItemResponse', data.detail.response.data);
+        var self = this;
         var item = this.items.find(function (f) { return f.TaskID == result.TaskID });
         //console.log('refresh item', item);
         if (item) {
@@ -193,8 +124,15 @@
 
           //console.log('compare after update', JSON.stringify(this.items[index]), JSON.stringify(result) );
           //if (JSON.stringify(this.items[index]) !== JSON.stringify(result)){
-          //console.log('refresh item', index, result);
-          this.splice('items', index, 1, result);
+            //console.log('refresh item', index, result);
+          //this.splice('items', index, 1, result);
+          if (this.openOnly && (result.IsActioned || result.IsCompleted)) {
+            // remove
+            this.splice('items', index, 1);
+            self.fire('item-removed', item);
+          } else {
+            this.splice('items', index, 1, result);
+          }
           //}
           //this.set('items', this.items);
           //this.push('items', result);
@@ -223,11 +161,8 @@
           var index = this.items.indexOf(item);
           console.log('remove item', item, index);
           this.splice('items', index, 1);
+          self.fire('item-removed', item);
         }
-      },
-      _laterRestoreResponse: function (data) {
-        this.$.laterGet.generateRequest();
-        this.undoDeleteTaskId = "";
       },
       _elementUpdated: function (ev) {
         console.log(ev);
@@ -242,7 +177,6 @@
         }
 
       },
-
       _elementDelete: function (ev) {
         var data = ev.detail;
         this.$.appApi.deleteTask(data.taskId);
@@ -262,6 +196,8 @@
           var index = this.items.indexOf(item);
           console.log('remove item', item, index);
           this.splice('items', index, 1);
+          self.fire('item-moved-to-today', item);
+          self.fire('item-removed', item);
         }
       },
       _dateToInt: function (date) {

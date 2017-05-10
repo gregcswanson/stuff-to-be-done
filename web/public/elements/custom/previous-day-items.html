@@ -25,33 +25,46 @@
         display: block;
         font-size: 12px;
       }
+      
+      p.loading {
+        padding: 20px;
+        text-align: center;
+        font-style: italic;
+        color: #777;
+      }
+      
+      p.previous-days {
+        display: block;
+        text-align: center;
+        color: #333;
+        font-size: 14px;
+        font-weight: bold;
+      }
     </style>
 
-    <!-- items grouped by day -->
-    <div hidden$="{{isEmpty}}">
-      <template is="dom-repeat" items="{{days}}">
-        <moment-js date="[[item.Display]]" date-format="YYYYMMDD" format="dddd Do MMMM, YYYY"></moment-js>
-        <paper-material elevation="1" hidden$="{{isEmpty}}">
-          <template is="dom-repeat" items="{{item.DayTasks}}">
-            <container-element child-name="[[item.ElementName]]" task-id="[[item.TaskID]]" show-later=true show-today is-complete={{item.IsCompleted}}
-              is-complete-view={{item.IsCompleted}} element-data="[[item.Data]]" on-element-updated="_elementUpdated" on-element-delete="_elementDelete"
-              on-element-do-later="_elementDoLater" on-element-do-today="_elementDoToday">
-            </container-element>
-        </paper-material>
-        </template>
-      </template>
 
+
+    <!-- loading -->
+    <p class="loading" hidden$="{{!isLoading}}">Loading...</p>
+
+    <!-- items grouped by day -->
+    <div hidden$="{{isLoading}}">
+      <div hidden$="{{isEmpty}}">
+        <p class="previous-days">Open items on previous days</p>
+        <template is="dom-repeat" items="{{days}}">
+          <moment-js date="[[item.Display]]" date-format="YYYYMMDD" format="dddd Do MMMM, YYYY"></moment-js>
+          <paper-material elevation="1" hidden$="{{isEmpty}}">
+            <task-items book-id="[[bookId]]" dayAsString="[[item.Display]]" open-only show-later on-item-removed="_taskItemsItemRemoved"
+              items="[[item.DayTasks]]"></task-items>
+          </paper-material>
+        </template>
+
+      </div>
     </div>
 
-    <!-- ajax calls -->
-    <iron-ajax id="ajaxGetOpenDays" auto url="/api/v1/book/[[bookId]]/previous/[[dayAsString]]" handle-as="json" on-response="_ajaxGetOpenDaysResponse"></iron-ajax>
-    <iron-ajax id="ajaxUpdate" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="PUT"
-      url="/api/v1/book/[[bookId]]/previous/[[currentTaskId]]" handle-as="json" on-response="_ajaxUpdateResponse"></iron-ajax>
-    <iron-ajax id="ajaxDelete" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="DELETE"
-      url="/api/v1/book/[[bookId]]/previous/[[currentTaskId]]/[[currentDayAsString]]" handle-as="json" on-response="_ajaxDeleteResponse"></iron-ajax>
-
-    <app-api id="appApi" book-id="[[bookId]]" on-task-deleted="_taskDeleted" on-task-do-later-completed="_taskDoLaterCompleted"
-      on-task-do-today-completed="_taskDoTodayCompleted"></app-api>
+    <!-- ajax calls / move to the api object  -->
+    <iron-ajax id="ajaxGetOpenDays" url="/api/v1/book/[[bookId]]/previous/[[dayAsString]]" handle-as="json" on-response="_ajaxGetOpenDaysResponse"></iron-ajax>
+    <app-api id="appApi" book-id="[[bookId]]"></app-api>
 
   </template>
   <script>
@@ -61,6 +74,7 @@
         dayAsString: {
           type: String,
           value: '',
+          observer: '_onDayAsStringChanged',
         },
         bookId: {
           type: String,
@@ -77,18 +91,44 @@
           type: Boolean,
           value: true
         },
+        isLoading: {
+          type: Boolean,
+          value: true
+        }
       },
       observers: [
         'daysAddedOrRemoved(days.splices)'
       ],
+      ready: function () {
+        this.isLoading = true;
+        this.$.ajaxGetOpenDays.generateRequest();
+      },
+      _onDayAsStringChanged: function (newValue) {
+        if (newValue !== '') {
+          this.isLoading = true;
+          this.$.ajaxGetOpenDays.generateRequest();
+
+        }
+      },
       daysAddedOrRemoved: function (changeRecord) {
         console.log('daysAddedOrRemoved', changeRecord, this.days.length);
         this.isEmpty = this.days.length == 0;
       },
       _ajaxGetOpenDaysResponse: function (data) {
         this.days = data.detail.response.data;
+        this.isLoading = false;
       },
-      _elementUpdated: function (ev) {
+      _taskItemsItemRemoved: function (data) {
+        console.log('_taskItemsItemRemoved', data);
+        var self = this;
+        for (var i = this.days.length - 1; i > -1; i--) {
+          var day = this.days[i];
+          if (day.DayTasks.length == 0) {
+            self.splice("days", i, 1);
+          }
+        }
+      },
+      /*_elementUpdated: function (ev) {
         var data = ev.detail;
         this.currentTaskId = data.taskId;
         var self = this;
@@ -108,6 +148,8 @@
         });
       },
       removeItem: function (day, item, index, dayIndex, self) {
+        this.$.ajaxGetOpenDays.generateRequest();
+        return;
         var newDays = [];
         for (var i = 0; i < day.DayTasks.length; i++) {
           if (i != index) {
@@ -132,25 +174,6 @@
           }
         }
       },
-
-      /*_XelementDoLater: function(ev){
-          var data = ev.detail;
-          this.currentTaskId = data.taskId;
-          var self = this;
-          this.findDayItem(data.taskId, function(day, item){
-            self.$.ajaxDoLater.body = { DayID: item.DayID,  TaskID: data.taskId, Data: data.elementData, IsCompleted: data.isCompleted };
-            self.$.ajaxDoLater.generateRequest();
-          });
-      },
-      _ajaxDoLaterResponse: function(data) {
-          var result = data.detail.response.data;
-          var self = this;
-          this.findDayItem(result.TaskID, function(day, item, index, dayIndex){
-            console.log('do later', day, item, index);
-            self.removeItem(day, item, index, dayIndex, self);
-          });
-      },*/
-
       _elementDoLater: function (ev) {
         var data = ev.detail;
         data.dayId = '';
@@ -195,50 +218,8 @@
           console.log('deleted', day, item, index);
           self.removeItem(day, item, index, dayIndex, self);
         });
-      },
-      /*_ajaxDeleteResponse: function(data) {
-          var result = data.detail.response.data;
-          var self = this;
-          this.findDayItem(result.TaskID, function(day, item, index, dayIndex){
-            console.log('deleted', day, item, index);
-            self.removeItem(day, item, index, dayIndex, self);
-          });
-      },
-      
-      _ajaxCreateDayItemPostResponse: function(data) {
-          console.log(data.detail.response.data);
-          // check for error codes?
-          this.push('items', data.detail.response.data);
-      },
-      
-      _ajaxDoLaterResponse: function(data) {
-          var result = data.detail.response.data;
-          console.log('_ajaxDoLaterResponse', result);
-          var item = this.items.find(function(f){return f.TaskID == result.TaskID});
-          console.log('unshift item', item);
-          if (item) {
-            var index = this.items.indexOf(item);
-            this.splice('items', index, 1);
-          }
-          // trigger an update message to the later module if it exists
-      },
-      _ajaxDeleteDayItem: function(data) {
-          console.log('_ajaxDeleteDayItem', data.detail.response.data);
-          var taskID = data.detail.response.data.ID;
-          this.undoDeleteTaskId = taskID;
-          var item = this.items.find(function(f){return f.ID == taskID});
-          console.log('unshift item', item);
-          if (item) {
-            var index = this.items.indexOf(item);
-            this.splice('items', index, 1);
-          }
-      },
-      _laterRestoreResponse: function(data) {
-        this.$.laterGet.generateRequest();
-        this.undoDeleteTaskId = "";
-      },
-      
-      */
+      },*/
+
     });
   </script>
 </dom-module>

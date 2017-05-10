@@ -38,6 +38,23 @@ func DayHandler(c *gin.Context) {
 }
 
 func ApiDayNewElementHandler(c *gin.Context) {
+  taskUseCases := usecases.NewTaskUseCases(c);
+  
+  bookID := c.Param("bookId")
+  dayAsString := c.Param("dayAsString")
+  elementName := c.PostForm("elementName")
+
+  dayTask, err := taskUseCases.NewTaskOnDate(bookID, dayAsString, elementName)
+  if err != nil {
+    JsonError(c, err)
+    return
+  } else {
+    c.JSON(http.StatusOK, gin.H{
+        "data": dayTask,
+    })
+  }
+  
+/*
   // setup the required repositories
   user := GetAppUser(c)
   dayRepository := repositories.NewDayRepository(c.Request)
@@ -75,7 +92,7 @@ func ApiDayNewElementHandler(c *gin.Context) {
         "data": dayTask,
     })
   }
-
+*/
 }
 
 func ApiDayHander(c *gin.Context) {
@@ -252,6 +269,7 @@ func ApiDayDeleteHandler(c *gin.Context) {
     day.IsActioned = true
     //day.Data = data
     task.CurrentDate = 0
+	  task.LastDayID = day.ID
 
     day, err = dayRepository.Update(day)
     if err != nil {
@@ -301,6 +319,53 @@ func ApiDayDoLaterPutHandler(c *gin.Context) {
     })
   }
 
+}
+
+func CommentPutHandler(c *gin.Context) {
+  // setup the required repositories
+  log.Println("put comment");
+  //user := GetAppUser(c)
+  dayRepository := repositories.NewDayRepository(c.Request)
+  taskRepository := repositories.NewTaskRepository(c.Request)
+
+  // get the parameters
+  bookID := c.Param("bookId")
+  taskID := c.PostForm("TaskID")
+  dayID := c.PostForm("DayID")
+  comment :=  c.PostForm("Comment")
+
+  // get the task
+  task, err := taskRepository.FindById(bookID, taskID)
+  if err != nil {
+    c.JSON(500, gin.H{
+      "message": err,
+    })
+    return
+  }
+  // get the day item
+  day, err := dayRepository.FindById(bookID, dayID)
+  if err != nil {
+    c.JSON(500, gin.H{
+      "message": err,
+    })
+    return
+  }
+  
+  day.Comment = comment
+  day, err = dayRepository.Update(day)
+  if err != nil {
+    c.JSON(500, gin.H{
+      "message": err,
+    })
+  } else {
+    // build the result record
+    dayTask := domain.DayTask{}
+    dayTask.Build(day, task)
+    log.Println(dayTask)
+    c.JSON(http.StatusOK, gin.H{
+        "data": dayTask,
+    })
+  }
 }
 
 func ApiDayDoOnDatePutHander(c *gin.Context) {

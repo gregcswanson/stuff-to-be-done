@@ -1,8 +1,9 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="/elements/custom/app-theme.html">
 
 <dom-module id="container-element">
   <template>
-    <style>
+    <style include="app-theme">
        :host {
         display: block;
         padding: 0 40px 0 0;
@@ -25,6 +26,7 @@
       
       paper-button {
         text-transform: none;
+         font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
       }
       
       paper-button.actions {
@@ -37,24 +39,54 @@
         color: #999;
         padding: 8px;
       }
-
+      
       #backdrop {
         z-index: 1;
       }
-
+      
+      #commentext {
+        padding: 0 0 0 60px;
+      }
+      
+      paper-textarea#commentext {
+        --paper-input-container-input: {
+          font-style: italic;
+          font-size: 10px;
+          color: var(--secondary-text-color, black);
+        }
+      }
+      
+      paper-textarea {
+        --paper-input-container-input: {
+          font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
+          font-style: italic;
+          font-size: 10px;
+          color: var(--secondary-text-color, black);
+        }
+      }
     </style>
 
     <div id="insertion"></div>
     <paper-button class="actions" on-tap="_toggleActions">
       <iron-icon icon="more-vert"></iron-icon>
     </paper-button>
-    <iron-overlay-backdrop id="backdrop" on-tap="_toggleActions"></iron-overlay-backdrop>
 
+    <!-- comments -->
+    <paper-textarea id="commentext" hidden$="{{!showComment}}" placeholder="Add a comment for this day..."
+     value="{{commentText}}"
+      on-change="_commentChanged" no-label-float>
+    </paper-textarea>
+
+    <!-- actions -->
+    <iron-overlay-backdrop id="backdrop" on-tap="_toggleActions"></iron-overlay-backdrop> 
     <paper-material class="tools" elevation="2" hidden$="{{!showActions}}">
+      <paper-button on-tap="_toggleShowComment" hidden$="{{!canComment}}">
+        <span>Add comment</span>
+      </paper-button>
       <paper-button on-tap="_delete" hidden$="{{isCompletedView}}">
         <span>Delete</span>
       </paper-button>
-      <paper-button on-tap="_doLater" hidden$="{{!showLater}}">
+      <paper-button on-tap="_doLater" hidden$="{{!canShowLater}}">
         <span>Do later</span>
       </paper-button>
       <paper-button on-tap="_doToday" hidden$="{{!showToday}}">
@@ -64,6 +96,8 @@
         <span>Re open</span>
       </paper-button>
     </paper-material>
+
+    <app-api id="appApi" book-id="[[bookId]]"></app-api>
   </template>
 
 
@@ -81,14 +115,41 @@
           type: String,
           value: '',
         },
+        bookId: {
+          type: String,
+          value: '',
+        },
+        dayId: {
+          type: String,
+          value: '',
+          observer: '_dayIdChanged',
+        },
         isCompleted: {
           type: Boolean,
           value: false,
           observer: 'isCompletedChanged',
         },
+        commentText: {
+          type: String,
+          value: '',
+          observer: '_commentTextChanged',
+        },
+        showComment: {
+          type: Boolean,
+          value: false,
+        },
+        canComment: {
+          type: Boolean,
+          value: false,
+        },
+        canShowLater: {
+          type: Boolean,
+          value: false,
+        },
         showLater: {
           type: Boolean,
           value: false,
+          observer: '_showLaterChanged'
         },
         showToday: {
           type: Boolean,
@@ -133,6 +194,15 @@
           this.fire('element-updated', { taskId: self.taskId, elementData: self.elementData, isCompleted: self.isCompleted }, { bubbles: true });
         });
 
+        document.addEventListener('set-initial-focus', function (e) {
+          //console.log(e.detail, this.taskId);
+          if (this.taskId == e.detail.taskId) {
+            console.log(e.detail);
+            if (this.$.el.setInitialFocus) {
+              this.$.el.setInitialFocus(e.detail.text);
+            }
+          }
+        }.bind(this));
 
         //Polymer.dom(this.$.insertion).appendChild(insertionElement);
 
@@ -151,7 +221,25 @@
 
 
       },
-
+      _dayIdChanged: function() {
+        this.canComment = this.dayId !== '' && !this.isCompletedView;
+      },
+      _commentTextChanged: function() {
+        this.showComment = this.showComment || (this.commentText && this.commentText !== '');
+      },
+      _toggleShowComment: function() {
+        this.showComment = !this.showComment;
+        if (!this.showComment){
+          this.commentText = '';
+        }
+        this.showActions = false;
+        this.$.backdrop.close();
+      },
+      _commentChanged: function(){
+        // save the commment
+        console.log('save comment', this.commentText);
+        this.$.appApi.saveComment(this.dayId, this.taskId, this.commentText);
+      },
       _toggleActions: function () {
         this.showActions = !this.showActions;
         if (this.showActions) {
@@ -165,12 +253,17 @@
         if (this.$.el) {
           this.$.el.isCompleted = newValue;
         }
+        this.canShowLater = !this.isCompleted && this.showLater;
+      },
+      _showLaterChanged: function(newValue) {
+        this.canShowLater = !this.isCompleted && this.showLater;
       },
       isCompletedViewChanged: function (newValue) {
         //console.log('isCompletedView changed', newValue);
         if (this.$.el) {
           this.$.el.isCompletedView = newValue;
         }
+        this.canComment = this.dayId !== '' && !this.isCompletedView;
       },
       dataChanged: function (newValue) {
         this.showActions = false;
@@ -178,7 +271,9 @@
         if (this.$.el) {
           var data = JSON.parse(this.elementData);
           //console.log('container-element data changed', data);
-          this.$.el.elementData = data;
+          if (this.$.el.elementData !== data) {
+            this.$.el.elementData = data;
+          }
         }
       },
       attached: function () {

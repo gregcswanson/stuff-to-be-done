@@ -29,13 +29,24 @@
                 padding: 11px 0;
                 display: block;
                 white-space: pre-line;
-                margin: 0 40px;
+                margin: 0 0px 0 40px;
                 color: #999;
             }
             
-            div.to-do-container>paper-textarea {
+            div.to-do-container>paper-textarea,
+            div.to-do-container>textarea {
                 display: block;
-                margin: 0 40px 0 40px;
+                margin: 0 0px 0 40px;
+            }
+
+            paper-checkbox {
+                --paper-checkbox-checked-color: var(--paper-input-container-color, black);
+            }
+
+            paper-textarea {
+                --paper-input-container-input: {
+                    font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
+                }
             }
         </style>
         <div class="to-do-container" hidden$="{{!isCompletedView}}">
@@ -46,7 +57,8 @@
         <div class="to-do-container" hidden$="{{isCompletedView}}">
             <paper-checkbox name="iscompleted" checked="{{isCompleted}}" on-change="_completeChanged">
             </paper-checkbox>
-            <paper-textarea type="text" placeholder="To-do..." value="{{elementData.text::input}}" on-change="_textChanged" no-label-float></paper-textarea>
+            <paper-textarea id="notetext" type="text" placeholder="To-do..." value="{{elementData.text::input}}" on-change="_textChanged"
+                on-blur="_blur" no-label-float></paper-textarea>
         </div>
     </template>
     <script>
@@ -68,11 +80,35 @@
                     value: false,
                 },
             },
+            ready: function () {
+                this.isDirty = false;
+            },
+            setInitialFocus: function (text) {
+                // called when focus is requested for the element
+                // text is popupated for new records when triggered from another element
+                this.$.notetext.scrollIntoView();
+                if (text && text.length > 0) {
+                    this.$.notetext.focus();
+                    this.isDirty = true;
+                    this.$.notetext.value = text;
+                    this.elementData.text = text;
+                } else {
+                    this.$.notetext.focus();
+                }
+            },
+            _blur: function () {
+                if (this.isDirty) {
+                    this.isDirty = false;
+                    this._save();
+                }
+            },
             _completeChanged: function (event) {
-                var result = { data: this.elementData, isCompleted: this.isCompleted };
-                this.fire('element-changed', result, { bubbles: true });
+                this._save();
             },
             _textChanged: function (event) {
+                this._save();
+            },
+            _save: function () {
                 var result = { data: this.elementData, isCompleted: this.isCompleted };
                 this.fire('element-changed', result, { bubbles: true });
             },

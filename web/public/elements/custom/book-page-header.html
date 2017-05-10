@@ -47,14 +47,15 @@
       .nav-buttons a {
         padding: 10px 1px 7px 1px;
         display: inline-block;
-        color: white !important;
+        color: var(--dark-primary-color,#ddd) !important;
         text-align: center;
         min-width: 40px;
         position: relative;
       }
       
       .nav-buttons a.active {
-        border-bottom: 3px solid white;
+        color: white !important;
+        /*border-bottom: 3px solid white;*/
       }
 
       .nav-buttons a span.count {
@@ -70,7 +71,7 @@
       }
       
       .nav-buttons a:hover {
-        color: #999 !important;
+        color: #aaa !important;
       }
     </style>
 
@@ -125,7 +126,9 @@
         this.noLaterItems = true;
         this.$.appApi.getLaterCount();
         // replace with websockets
-        this.interval - setInterval(this._onInterval.bind(this), 2000);
+        //this.interval - 
+        setInterval(this._onInterval.bind(this), 2000);
+        
       },
       activeClass: function(page){
         return window.location.href.endsWith("/" + page) ? 'active' : '';

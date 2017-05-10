@@ -19,6 +19,7 @@ type DayTask struct {
 	Created time.Time
 	CanReopen bool
 	Tags string
+	Comment string // a comment for the day
 }
 
 func (t *DayTask) Build(day Day, task Task)  {
@@ -34,6 +35,7 @@ func (t *DayTask) Build(day Day, task Task)  {
 	t.IsActioned = day.IsActioned
 	t.Created = day.Created
 	t.Tags = day.Tags
+	t.Comment = day.Comment
 	if (task.CurrentDate == day.DateAsInt && t.IsCompleted){
 		t.CanReopen = true
   	} else {
@@ -51,6 +53,7 @@ func (t *DayTask) BuildTask(task Task)  {
 	t.IsCompleted = task.IsCompleted
 	t.Created = task.Created
 	t.Tags = task.Tags
+	t.Comment = ""
 	if (task.CurrentDate == 0 && t.IsCompleted){
 		t.CanReopen = true
   	} else {
@@ -58,3 +61,8 @@ func (t *DayTask) BuildTask(task Task)  {
 	}
 }
 
+
+type DayTaskSort []DayTask
+func (a DayTaskSort) Len() int { return len(a) }
+func (a DayTaskSort) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a DayTaskSort) Less(i, j int) bool { return a[i].DateAsInt > a[j].DateAsInt }

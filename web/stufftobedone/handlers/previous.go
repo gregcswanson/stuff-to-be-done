@@ -72,9 +72,7 @@ func ApiPreviousHandler(c *gin.Context) {
 
   for i := 0; i < len(tasks); i++ {
     dayTask := domain.DayTask{}
-    //log.Println(days[i], tasks[i])
     dayTask.Build(days[i], tasks[i])
-    //log.Println("daytask", dayTask)
     // find the dateAsInt in the result
     found := false
     for index, openDay := range result {

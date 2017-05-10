@@ -4,6 +4,14 @@
     <style>
        :host {
         display: block;
+        margin-top: 10px;
+      }
+      
+      p.loading {
+        padding: 100px 20px 20px 20px;
+        text-align: center;
+        font-style: italic;
+        color: #777;
       }
       
       paper-material {
@@ -19,6 +27,12 @@
         text-align: center;
       }
       
+      moment-js {
+        text-align: center;
+        display: block;
+        font-size: 12px;
+      }
+      
       add-element {
         display: block;
         position: absolute;
@@ -26,39 +40,37 @@
         right: 10px;
       }
     </style>
-    <!-- items -->
-    <paper-material elevation="1" hidden$="{{isEmpty}}">
-      <template is="dom-repeat" items="{{items}}">
-        <container-element child-name="[[item.ElementName]]" task-id="[[item.ID]]" show-today is-complete="[[item.IsCompleted]]"
-          element-data="[[item.Data]]" on-element-updated="_elementUpdated" on-element-delete="_elementDelete" on-element-do-today="_elementDoToday">
-        </container-element>
+
+    <!-- loading -->
+    <p class="loading" hidden$="{{!isLoading}}">Loading...</p>
+
+    <div hidden$="{{isEmpty}}">
+      <template is="dom-repeat" items="{{days}}">
+        <moment-js date="[[item.Display]]" date-format="YYYYMMDD" format="dddd Do MMMM, YYYY"></moment-js>
+        <paper-material elevation="1" hidden$="{{isEmpty}}">
+          <task-items book-id="[[bookId]]" dayAsString="[[item.Display]]" 
+          on-item-removed="_taskItemsItemRemoved" items="[[item.DayTasks]]"></task-items>
+        </paper-material>
       </template>
-    </paper-material>
-    <paper-material class="no-items" elevation="1" hidden$="{{!isEmpty}}">
-      <p>No items</p>
-    </paper-material>
+
+    </div>
+
+    <div hidden$="{{isLoading}}">
+      <paper-material class="no-items" elevation="1" hidden$="{{!isEmpty}}">
+        <p>
+          No items<br /><br /> You can send incomplete items in the day or history view into this list to be done at a later
+          date.
+          </br><br /> If the task is here for a while, be honest and just delete it...
+        </p>
+      </paper-material>
+    </div>
 
     <!-- action button -->
-    <add-element book-id="[[bookId]]" on-add-selected-element="_addElement"></add-element>
-    <!-- undo button -->
-    <template is="dom-if" if="{{undoDeleteTaskId}}">
-      <paper-button on-tap="_restoreItem">
-        Undo last delete
-      </paper-button>
-    </template>
-    <!-- ajax calls -->
-    <iron-ajax id="laterGet" auto url="/api/v1/book/[[bookId]]/later" handle-as="json" on-response="_laterResponse"></iron-ajax>
+    <add-element book-id="[[bookId]]" hidden$="{{isLoading}}" on-add-selected-element="_addElement"></add-element>
+    
+    <!-- api -->
+    <app-api id="appApi" book-id="[[bookId]]" on-later-items-loaded="_laterItemsLoaded" on-later-element-created="_laterItemCreated"></app-api>
 
-    <iron-ajax id="laterPost" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="POST"
-      url="/api/v1/book/[[bookId]]/later" handle-as="json" on-response="_laterPostResponse"></iron-ajax>
-    <iron-ajax id="laterPut" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="PUT"
-      url="/api/v1/book/[[bookId]]/later/[[currentTaskId]]" handle-as="json" on-response="_laterPutResponse"></iron-ajax>
-    <iron-ajax id="laterRestore" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="PUT"
-      url="/api/v1/book/[[bookId]]/later/[[currentTaskId]]/restore" handle-as="json" on-response="_laterRestoreResponse"></iron-ajax>
-    <iron-ajax id="ajaxDoToday" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="PUT"
-      url="/api/v1/book/[[bookId]]/move/[[currentTaskId]]" handle-as="json" on-response="_ajaxDoTodayResponse"></iron-ajax>
-    <iron-ajax id="laterDelete" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="DELETE"
-      url="/api/v1/book/[[bookId]]/later/[[currentTaskId]]" handle-as="json" on-response="_laterDeleteResponse"></iron-ajax>
   </template>
   <script>
     Polymer({
@@ -72,102 +84,63 @@
           type: String,
           value: '',
         },
-        currentTaskId: {
-          type: String,
-          value: '',
+        isEmpty: {
+          type: Boolean,
+          value: true
         },
-        undoDeleteTaskId: {
-          type: String,
-          value: '',
+        isLoading: {
+          type: Boolean,
+          value: true,
         },
-        items: {
+        days: {
           type: Array,
           value: function () {
             return [];
           },
           notify: true
         },
-        isEmpty: {
-          type: Boolean,
-          value: true
-        },
       },
-      observers: [
-        'itemsAddedOrRemoved(items.splices)'
-      ],
-      itemsAddedOrRemoved: function (changeRecord) {
-        console.log('itemsAddedOrRemoved', changeRecord, this.items.length);
-        this.isEmpty = this.items.length == 0;
+      ready: function () {
+        this.isLoading = true;
+        this.$.appApi.getLaterItems();
+      },
+      _laterItemsLoaded: function () {
+        console.log('later items loaded', event.detail.items);
+        this.days = event.detail.items;
+        this.isLoading = false;
+        this.isEmpty = this.days.length == 0;
+      },
+      _taskItemsItemRemoved: function (data) {
+        console.log('_taskItemsItemRemoved', data);
+        var self = this;
+        for (var i = this.days.length - 1; i > -1; i--) {
+          var day = this.days[i];
+          if (day.DayTasks.length == 0) {
+            self.splice("days", i, 1);
+          }
+        }
+        this.isEmpty = this.days.length == 0;
       },
       _addElement: function (ev) {
         var item = ev.detail.item;
         console.log('_addElement', item);
         // ajax request to create default object
-        this.$.laterPost.body = { elementName: item.ElementName };
-        this.$.laterPost.generateRequest();
+        var dayAsString = this._dateToInt(new Date()).toString();
+        // call the API to do this
+        this.$.appApi.createElementForLater(item.ElementName, dayAsString);
+        //this.$.laterPost.body = { elementName: item.ElementName, dayAsString: dayAsString };
+        //this.$.laterPost.generateRequest();
       },
-      _restoreItem: function () {
-        this.currentTaskId = this.undoDeleteTaskId;
-        this.$.laterRestore.body = { ID: this.undoDeleteTaskId };
-        this.$.laterRestore.generateRequest();
+      _laterItemCreated: function (data) {
+        this.$.appApi.getLaterItems();
+        //this.push('items', data.detail.response.data);
+        // fire after updated
+        //this.justAdded = { taskId: data.detail.response.data.TaskID, text: '' };
+        //setTimeout(this._onCreatedTimeout.bind(this), 100);
       },
-      _laterResponse: function (data) {
-        this.items = data.detail.response.data;
-      },
-      _laterPostResponse: function (data) {
-        console.log(data.detail.response.data);
-        // check for error codes?
-        this.push('items', data.detail.response.data);
-      },
-      _laterPutResponse: function (data) {
-        var result = data.detail.response.data;
-        console.log('_laterPutResponse', data.detail.response.data);
-        if (result.IsCompleted) {
-          var item = this.items.find(function (f) { return f.ID == result.ID });
-          if (item) {
-            var index = this.items.indexOf(item);
-            this.splice('items', index, 1);
-          }
-        }
-      },
-      _laterDeleteResponse: function (data) {
-        console.log('_laterDeleteResponse', data.detail.response.data);
-        var taskID = data.detail.response.data.ID;
-        this.undoDeleteTaskId = taskID;
-        var item = this.items.find(function (f) { return f.ID == taskID });
-        console.log('unshift item', item);
-        if (item) {
-          var index = this.items.indexOf(item);
-          this.splice('items', index, 1);
-        }
-      },
-      _laterRestoreResponse: function (data) {
-        this.$.laterGet.generateRequest();
-        this.undoDeleteTaskId = "";
-      },
-      _elementUpdated: function (ev) {
-        console.log(ev);
-        var data = ev.detail;
-        console.log('container element data updated', data);
-        this.currentTaskId = data.taskId;
-        this.$.laterPut.body = { ID: data.taskId, Data: data.elementData, IsCompleted: data.isCompleted };
-        this.$.laterPut.generateRequest();
-      },
-      _elementDelete: function (ev) {
-        var data = ev.detail;
-        console.log('container element data delete', data);
-        this.currentTaskId = data.taskId;
-        //this.$.laterDelete.body = { ID: data.taskId, Data: data.elementData, IsCompleted: data.isCompleted };
-        this.$.laterDelete.generateRequest();
-      },
-      _elementDoToday: function (ev) {
-        // set the .dayAsString to the current date to move the item to
-        this.dayAsString = this._dateToInt(new Date()).toString();
-        var data = ev.detail;
-        console.log('container element data updated to today', data);
-        this.currentTaskId = data.taskId;
-        this.$.ajaxDoToday.body = { TaskID: data.taskId, Data: data.elementData, IsCompleted: data.isCompleted, DayAsString: this.dayAsString };
-        this.$.ajaxDoToday.generateRequest();
+      _onCreatedTimeout: function () {
+        // send the set inital focus request
+        this.fire('set-initial-focus', this.justAdded);
       },
       _dateToInt: function (date) {
         var result = date.getFullYear().toString();
@@ -176,14 +149,6 @@
         if (date.getDate() < 10) result += "0";
         result += date.getDate().toString();
         return result;
-      },
-      _ajaxDoTodayResponse: function (data) {
-        var taskID = data.detail.response.data.TaskID;
-        var item = this.items.find(function (f) { return f.ID == taskID });
-        if (item) {
-          var index = this.items.indexOf(item);
-          this.splice('items', index, 1);
-        }
       },
     });
   </script>

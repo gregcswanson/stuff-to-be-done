@@ -13,6 +13,12 @@
         on-response="_ajaxGetCompletedItemsResponse">
     </iron-ajax>
     <iron-ajax
+        id="ajaxGetLaterItems"
+        url="/api/v1/book/[[bookId]]/later"
+        handle-as="json"
+        on-response="_ajaxGetLaterItemsResponse">
+    </iron-ajax>
+    <iron-ajax
         id="ajaxGetTrash"
         url="/api/v1/book/[[bookId]]/trash"
         handle-as="json"
@@ -49,6 +55,26 @@
         url="/api/v1/book/[[bookId]]/task/[[currentTaskId]]"
         handle-as="json"
         on-response="_ajaxDeleteTaskResponse"></iron-ajax>
+    <iron-ajax
+        id="ajaxDayComment"
+        x-content-type="application/json"
+        content-type="application/x-www-form-urlencoded"
+        method="PUT"
+        url="/api/v1/book/[[bookId]]/comment"
+        handle-as="json"
+        on-response="_ajaxDayCommentResponse"></iron-ajax>
+    <iron-ajax
+        id="ajaxEmptyTrash"
+        x-content-type="application/json"
+        content-type="application/x-www-form-urlencoded"
+        method="DELETE"
+        url="/api/v1/book/[[bookId]]/trash"
+        handle-as="json"
+        on-response="_ajaxEmptyTrashResponse"></iron-ajax>
+    <iron-ajax id="ajaxLaterPost"    
+        content-type="application/x-www-form-urlencoded" 
+        method="POST"
+        url="/api/v1/book/[[bookId]]/later" handle-as="json" on-response="_laterPostResponse"></iron-ajax>
   </template>
   <script>
     Polymer({
@@ -76,6 +102,13 @@
                 notify: true
             },
         },
+        createElementForLater: function(elementName, dayAsString){
+            this.$.ajaxLaterPost.body = { elementName: elementName, dayAsString: dayAsString };
+            this.$.ajaxLaterPost.generateRequest();
+        },
+        _laterPostResponse: function(data) {
+            this.fire('later-element-created', { item: event.detail.response.data }, { bubbles: true });
+        },
         getCompletedItems: function(){
             this.$.ajaxGetCompletedItems.generateRequest();
         },
@@ -83,12 +116,25 @@
             var items = data.detail.response.data;
             this.fire('completed-items-loaded', { items: items }, { bubbles: true });
         },
+        getLaterItems: function() {
+            this.$.ajaxGetLaterItems.generateRequest();
+        },
+        _ajaxGetLaterItemsResponse: function(data){
+            var items = data.detail.response.data;
+            this.fire('later-items-loaded', { items: items }, { bubbles: true });
+        },
         getTrash: function(){
             this.$.ajaxGetTrash.generateRequest();
         },
         _ajaxGetTrashResponse: function(data) {
             var items = data.detail.response.data;
             this.fire('trash-loaded', { items: items }, { bubbles: true });
+        },
+        emptyTrash: function(){
+            this.$.ajaxEmptyTrash.generateRequest();
+        },
+        _ajaxEmptyTrashResponse: function(event) {
+            this.fire('trash-emptied', { result: "ok"  }, { bubbles: true });
         },
         getLaterCount: function(){
             this.$.ajaxGetLaterCount.generateRequest();
@@ -106,6 +152,14 @@
         _ajaxPutDoTaskLaterResponse: function(event){
             console.log('_ajaxPutDoTaskLaterResponse', event.detail.response.data);
             this.fire('task-do-later-completed', { item: event.detail.response.data }, { bubbles: true });
+        },
+        saveComment: function(dayID, taskID, comment ){
+            this.$.ajaxDayComment.body = {TaskID: taskID, DayID: dayID, Comment: comment };
+            this.$.ajaxDayComment.generateRequest();
+        },
+        _ajaxDayCommentResponse: function(data){
+            console.log('_ajaxDayCommentResponse', event.detail.response.data);
+            this.fire('day-comment-completed', { item: event.detail.response.data }, { bubbles: true });
         },
         doTaskToday: function(item){
           // set the .dayAsString to the current date to move the item to

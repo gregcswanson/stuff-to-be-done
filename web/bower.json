@@ -19,6 +19,7 @@
     "iron-ajax": "PolymerElements/iron-ajax#^1.4.3",
     "paper-dialog": "PolymerElements/paper-dialog#^1.1.0",
     "moment-js": "^0.7.2",
-    "iron-location": "PolymerElements/iron-location#^1.0.0"
+    "iron-location": "PolymerElements/iron-location#^1.0.0",
+    "app-datepicker": "motss/app-datepicker#^2.9.0"
   }
 }

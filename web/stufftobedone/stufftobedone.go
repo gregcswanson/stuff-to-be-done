@@ -29,23 +29,21 @@ func init() {
     //    apiV1book.GET("/day/:day", handlers.DayHandler)
     apiV1book.GET("/elements", handlers.BookElementsHandler)
     // later actions
-    apiV1book.GET("/later", handlers.BookLaterHandler)
+    apiV1book.GET("/later", handlers.ApiLaterHandler)
     apiV1book.POST("/later", handlers.BookLaterPostHandler)
-    apiV1book.PUT("/later/:taskId/restore", handlers.BookLaterRestoreHandler)
-    apiV1book.PUT("/later/:taskId/dotoday", handlers.BookLaterDoTodayHandler)
-    apiV1book.PUT("/later/:taskId", handlers.BookLaterPutHandler)
-    apiV1book.DELETE("/later/:taskId", handlers.BookLaterDeleteHandler)
+    //apiV1book.PUT("/later/:taskId/restore", handlers.BookLaterRestoreHandler)
+    //apiV1book.PUT("/later/:taskId/dotoday", handlers.BookLaterDoTodayHandler)
+    //apiV1book.PUT("/later/:taskId", handlers.BookLaterPutHandler)
+    //apiV1book.DELETE("/later/:taskId", handlers.BookLaterDeleteHandler)
     apiV1book.GET("/latercount", handlers.BookLaterCountHandler)
-    // completed actions
-    //apiV1book.GET("/completed", handlers.ApiCompletedHandler) // remove
     // trash handlers
     apiV1book.GET("/trash", handlers.ApiTrashGetHandler) // get trash items
+    apiV1book.DELETE("/trash", handlers.ApiTrashEmptyHandler)
 
     // day handlers
     apiV1book.GET("/day/:dayAsString", handlers.ApiDayHander)
     apiV1book.POST("/day/:dayAsString", handlers.ApiDayNewElementHandler)
     apiV1book.PUT("/day/:taskId", handlers.ApiDayPutHandler)
-    //apiV1book.PUT("/day/:taskId/dolater", handlers.ApiDayDoLaterPutHandler)
     apiV1book.DELETE("/task/:taskId", handlers.ApiDayDeleteHandler)
     // move
     apiV1book.PUT("/move/:taskId", handlers.ApiDayDoOnDatePutHander)
@@ -54,6 +52,7 @@ func init() {
     apiV1book.PUT("/previous/:taskId", handlers.ApiDayPutHandler)
 
     apiV1book.PUT("/dolater/:taskId", handlers.ApiDayDoLaterPutHandler)
+    apiV1book.PUT("/comment", handlers.CommentPutHandler)
     
   }
 

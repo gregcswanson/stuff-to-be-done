@@ -10,7 +10,7 @@
         margin: 10px;
         background: white;
       }
-
+      
       paper-material.no-items {
         padding: 10px;
       }
@@ -18,11 +18,29 @@
       paper-material.no-items p {
         text-align: center;
       }
-
-      container-element:not(:first-child) { 
-        border-top: 1px dotted #bbb;
+      
+      p.loading {
+        padding: 10px;
+        text-align: center;
+        font-style: italic;
       }
       
+      container-element:not(:first-child) {
+        border-top: 1px dotted #bbb;
+      }
+
+      .tools {
+        text-align: right;
+        padding-top: 10px;
+      }
+      
+
+      moment-js {
+        text-align: center;
+        display: block;
+        font-size: 12px;
+      }
+
       add-element {
         display: block;
         position: absolute;
@@ -32,20 +50,61 @@
     </style>
 
     <!-- items -->
-    <paper-material elevation="1" hidden$="{{isEmpty}}">
+    <div hidden$="{{isLoading}}" class="tools">
+      <paper-button on-tap="_emptyTrash" >Empty trash</paper-button>
+    </div>
+    <!-- loading -->
+    <p class="loading" hidden$="{{!isLoading}}">Loading...</p>
+
+    <div hidden$="{{isEmpty}}">
+      <template is="dom-repeat" items="{{days}}">
+        <moment-js date="[[item.Display]]" date-format="YYYYMMDD" format="dddd Do MMMM, YYYY"></moment-js>
+        <paper-material elevation="1" hidden$="{{isEmpty}}">
+          <task-items book-id="[[bookId]]" 
+          dayAsString="[[item.Display]]" 
+          show-today
+          is-completed-view
+          on-item-removed="_taskItemsItemRemoved" items="[[item.DayTasks]]"></task-items>
+        </paper-material>
+      </template>
+
+    </div>
+
+    <div hidden$="{{isLoading}}">
+      <paper-material class="no-items" elevation="1" hidden$="{{!isEmpty}}">
+        <p>
+          No items<br /><br /> You can delete tasks from and restore them from here.
+        </p>
+      </paper-material>
+    </div>
+
+
+    <!-- <paper-material elevation="1" hidden$="{{isEmpty}}">
       <template is="dom-repeat" items="{{items}}">
-        <container-element child-name="[[item.ElementName]]" task-id="[[item.ID]]" is-completed="[[item.IsCompleted]]" show-today
-          is-completed-view=true element-data="[[item.Data]]" on-element-do-today="_elementDoToday">
+        <container-element child-name="[[item.ElementName]]" 
+        task-id="[[item.ID]]" 
+        is-completed="[[item.IsCompleted]]" 
+        show-today
+          is-completed-view=true 
+          element-data="[[item.Data]]" 
+          on-element-do-today="_elementDoToday">
         </container-element>
       </template>
     </paper-material>
 
-    <paper-material class="no-items" elevation="1" hidden$="{{!isEmpty}}">
-      <p>No items</p>
-    </paper-material>
+    <div hidden$="{{isLoading}}">
+      <paper-material class="no-items" elevation="1" hidden$="{{!isEmpty}}">
+        <p>No items</p>
+      </paper-material>
+    </div>
+
+    <p class="loading" hidden$="{{!isLoading}}">Loading...</p> -->
 
     <!-- ajax calls -->
-    <app-api id="appApi" book-id="[[bookId]]" on-trash-loaded="_trashLoaded" on-task-do-today-completed="_taskDoTodayCompleted"></app-api>
+    <app-api id="appApi" book-id="[[bookId]]" 
+      on-trash-loaded="_trashLoaded"
+      on-trash-emptied="_tashEmptied"
+     on-task-do-today-completed="_taskDoTodayCompleted"></app-api>
 
   </template>
   <script>
@@ -56,37 +115,53 @@
           type: String,
           value: '',
         },
-        currentTaskId: {
-          type: String,
-          value: '',
+        isEmpty: {
+          type: Boolean,
+          value: true
         },
-        undoDeleteTaskId: {
-          type: String,
-          value: '',
+        isLoading: {
+          type: Boolean,
+          value: true,
         },
-        items: {
+        days: {
           type: Array,
           value: function () {
             return [];
           },
           notify: true
         },
-        isEmpty: {
-          type: Boolean,
-          value: true
-        },
       },
-      observers: [
+      /*observers: [
         'itemsAddedOrRemoved(items.splices)'
-      ],
+      ],*/
       ready: function () {
-        console.log('trash ready');
+        this.isLoading = true;
         this.$.appApi.getTrash();
       },
       _trashLoaded: function (event) {
-        this.items = event.detail.items;
+        this.days = event.detail.items;
+        this.isEmpty = this.days.length == 0;
+        this.isLoading = false;
       },
-      itemsAddedOrRemoved: function (changeRecord) {
+      _emptyTrash: function(){
+        this.$.appApi.emptyTrash();
+      },
+      _tashEmptied: function(){
+        this.isLoading = true;
+        this.$.appApi.getTrash();
+      },
+      _taskItemsItemRemoved: function (data) {
+        console.log('_taskItemsItemRemoved', data);
+        var self = this;
+        for (var i = this.days.length - 1; i > -1; i--) {
+          var day = this.days[i];
+          if (day.DayTasks.length == 0) {
+            self.splice("days", i, 1);
+          }
+        }
+        this.isEmpty = this.days.length == 0;
+      },
+      /*itemsAddedOrRemoved: function (changeRecord) {
         console.log('itemsAddedOrRemoved', changeRecord, this.items.length);
         this.isEmpty = this.items.length == 0;
       },
@@ -104,7 +179,7 @@
           var index = this.items.indexOf(item);
           this.splice('items', index, 1);
         }
-      },
+      },*/
 
     });
   </script>

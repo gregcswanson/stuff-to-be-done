@@ -19,26 +19,13 @@
           font-size: 12px;
         } 
         
-        p.previous-days {
-          display: block;
-          text-align: center;
-          color: #333;
-          font-size: 14px;
-          font-weight: bold;
-        }
-
     </style>
     
-    <!-- items 
-    <paper-material elevation="1">
-        <p>[[dayAsString]] - [[dayAndTimeAsString]]</p>
-    </paper-material>-->
-
     <p class="current-day">
       <moment-js date="[[dayAsString]]" date-format="YYYYMMDD" format="dddd Do MMMM, YYYY"></moment-js>
     </p>
     <day-items id="dayItems" day-as-string="[[dayAsString]]" book-id="[[bookId]]"></day-items>
-    <p class="previous-days">In-complete tasks on previous days</p>
+    
     <previous-day-items 
       day-as-string="[[dayAsString]]" 
       book-id="[[bookId]]"
@@ -55,10 +42,10 @@
           type: String,
           value: '',
         },
-        dayAsString: {
+        /*dayAsString: {
           type: String,
           value: '',
-        },
+        },*/
         bookId: {
           type: String,
           value: '',

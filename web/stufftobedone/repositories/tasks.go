@@ -7,6 +7,7 @@ import (
 	"appengine/datastore"
     "time"
     "log"
+    "strconv"
 )
 
 type TaskRepository struct {
@@ -146,6 +147,7 @@ func (r *TaskRepository) Create(elementName string, bookID string, dayAsInt int,
     // to-do convert to UTC now
     task := domain.Task{ ID: "", BookID: bookID, Data: "", ElementName: elementName, ProjectID: projectID, IsCompleted: false, CurrentDate: dayAsInt, Created: time.Now(), CreatedBy: userID, Updated: time.Now(), UpdatedBy: userID }
     task.DueDateAsInt = 99999999
+    task.Sort, _ = strconv.Atoi(task.Created.Format("20060102150405"))
     globalContext := appengine.NewContext(r.request)
     bookKey := datastore.NewKey(globalContext, "Books", bookID, 0, nil)
     

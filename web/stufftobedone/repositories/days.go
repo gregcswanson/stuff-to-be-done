@@ -6,6 +6,7 @@ import (
 	"appengine"
 	"appengine/datastore"
     "errors"
+    "strconv"
 )
 
 type DayRepository struct {
@@ -108,11 +109,57 @@ func (r *DayRepository) FindByTaskId(bookID string, taskID string, dateAsInt int
     return day, nil
 }
 
+func (r *DayRepository) FindAllByTaskId(bookID string, taskID string) ([]domain.Day, error) {
+    days := []domain.Day{}
+    globalContext := appengine.NewContext(r.request)
+    
+    // filter Days where not current scheduled, is not part of a project and is not completed
+    q := datastore.NewQuery("Days").Filter("TaskID = ", taskID)
+
+    // link the day to the book
+    bookKey := datastore.NewKey(globalContext, "Books", bookID, 0, nil)
+    q = q.Ancestor(bookKey)
+
+    keys, err := q.GetAll(globalContext, &days)
+    if err != nil {    
+        return days, err
+    } else {    
+        // loop through and add the keys as ID
+        for i := 0; i < len(keys); i++ {
+            days[i].ID = keys[i].Encode()
+        }
+    }
+    
+    return days, nil
+}
+
+func (r *DayRepository) FindByIds(bookId string, ids []string) ([]domain.Day, error){
+     // create the namespace context
+    globalContext := appengine.NewContext(r.request)
+   
+    // convert the ids to keys
+    length := len(ids)
+    days := make([]domain.Day, length)
+    keys := []*datastore.Key{}
+    for i := 0; i < length; i++ {
+        key, _ := datastore.DecodeKey(ids[i])
+        keys = append(keys, key)
+    }
+    err := datastore.GetMulti(globalContext, keys, days)
+    if err == nil {
+        for i := 0; i < length; i++ {
+            days[i].ID = ids[i]
+        }
+    } 
+    return days, err
+
+}
+
 func (r *DayRepository) Create(day domain.Day) (domain.Day, error) {
     
     globalContext := appengine.NewContext(r.request)
     bookKey := datastore.NewKey(globalContext, "Books", day.BookID, 0, nil)
-    
+    day.Sort, _ = strconv.Atoi(day.Created.Format("20060102150405"))
   	err := datastore.RunInTransaction(globalContext, func(c appengine.Context) error {
         
         key, err := datastore.Put(c, datastore.NewIncompleteKey(c, "Days", bookKey), &day)
