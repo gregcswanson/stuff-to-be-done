@@ -24,7 +24,8 @@ func (r *DayRepository) Day(bookID string, dateAsInt int) ([]domain.Day, error) 
     globalContext := appengine.NewContext(r.request)
     
     // filter Days where not current scheduled, is not part of a project and is not completed
-    q := datastore.NewQuery("Days").Filter("DateAsInt = ", dateAsInt).Filter("IsActioned = ", false).Order("Created")
+    //q := datastore.NewQuery("Days").Filter("DateAsInt = ", dateAsInt).Filter("IsActioned = ", false).Order("Created")
+    q := datastore.NewQuery("Days").Filter("DateAsInt = ", dateAsInt).Order("Created")
 
     // link the day to the book
     bookKey := datastore.NewKey(globalContext, "Books", bookID, 0, nil)

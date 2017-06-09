@@ -5,10 +5,10 @@ import (
   "github.com/gin-gonic/gin"
 )
 
-func AboutHandler(c *gin.Context) {
+func TermsHandler(c *gin.Context) {
   user := GetAppUser(c)
-  c.HTML(http.StatusOK, "about.html", gin.H{
-        "title": "About",
+  c.HTML(http.StatusOK, "terms.html", gin.H{
+        "title": "Terms",
         "logouturl" : user.LogoutUrl,
         "isLoggedIn": user.IsLoggedIn,
   })

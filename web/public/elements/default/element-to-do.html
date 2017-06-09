@@ -49,17 +49,27 @@
                 }
             }
         </style>
-        <div class="to-do-container" hidden$="{{!isCompletedView}}">
-            <paper-checkbox name="iscompleted" checked="{{isCompleted}}" on-change="_completeChanged">
-            </paper-checkbox>
-            <p>{{elementData.text}}</p>
+        <div hidden$="{{!isActioned}}">
+            <div class="to-do-container">
+                <paper-checkbox name="iscompleted" checked="{{isCompleted}}" disabled>
+                </paper-checkbox>
+                <p>{{elementData.text}}</p>
+            </div>
         </div>
-        <div class="to-do-container" hidden$="{{isCompletedView}}">
-            <paper-checkbox name="iscompleted" checked="{{isCompleted}}" on-change="_completeChanged">
-            </paper-checkbox>
-            <paper-textarea id="notetext" type="text" placeholder="To-do..." value="{{elementData.text::input}}" on-change="_textChanged"
-                on-blur="_blur" no-label-float></paper-textarea>
+        <div hidden$="{{isActioned}}">
+            <div class="to-do-container" hidden$="{{!isCompletedView}}">
+                <paper-checkbox name="iscompleted" checked="{{isCompleted}}" on-change="_completeChanged">
+                </paper-checkbox>
+                <p>{{elementData.text}}</p>
+            </div>
+            <div class="to-do-container" hidden$="{{isCompletedView}}">
+                <paper-checkbox name="iscompleted" checked="{{isCompleted}}" on-change="_completeChanged">
+                </paper-checkbox>
+                <paper-textarea id="notetext" type="text" placeholder="To-do..." value="{{elementData.text::input}}" on-change="_textChanged"
+                    on-blur="_blur" no-label-float></paper-textarea>
+            </div>
         </div>
+        
     </template>
     <script>
         Polymer({
@@ -79,6 +89,10 @@
                     type: Boolean,
                     value: false,
                 },
+                isActioned: {
+                    type: Boolean,
+                    value: false,
+                }
             },
             ready: function () {
                 this.isDirty = false;

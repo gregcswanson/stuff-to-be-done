@@ -6,6 +6,7 @@ import (
   "appengine/user"
   "stufftobedone/repositories"
   "stufftobedone/domain"
+  "log"
 )
 
 func UserMiddleware() gin.HandlerFunc {
@@ -22,6 +23,7 @@ func UserMiddleware() gin.HandlerFunc {
             appUser.Nickname = ""
             appUser.Email = ""
             appUser.IsLoggedIn = false
+            log.Println("***** Logged out")
             //url, err := user.LoginURL(appengineContext, "/")//c.Request.URL.String())
             //if err == nil {
                 appUser.LoginUrl = "/app/profile"
@@ -32,6 +34,7 @@ func UserMiddleware() gin.HandlerFunc {
             appUser.Nickname = ""
             appUser.Email = appengineUser.Email
             appUser.IsLoggedIn = true
+            log.Println("***** Logged in as " + appUser.Email)
             url, err := user.LogoutURL(appengineContext, "/") //repository.request.URL.String())
             if err == nil {
                 appUser.LogoutUrl = url

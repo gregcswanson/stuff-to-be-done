@@ -1,0 +1,123 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<dom-module id="demo-day">
+    <template>
+        <style>
+             :host {
+                display: block;
+            }
+
+            paper-material {
+                margin: 3px 3px;
+                display: block;
+                background-color: white;
+            }
+
+            p.current-day {
+                display: block;
+                text-align: center;
+                color: #333;
+                font-size: 12px;
+            }
+
+            add-element {
+                display: block;
+                position: absolute;
+                bottom: 10px;
+                right: 10px;
+                z-index: 1;
+            }
+        </style>
+
+        <p class="current-day">
+            <moment-js date="[[dayAsString]]" date-format="YYYYMMDD" format="dddd Do MMMM, YYYY"></moment-js>
+        </p>
+        <!-- items -->
+        <paper-material elevation="1">
+            <template is="dom-repeat" items="{{items}}">
+                <container-element id="[[item.DayID]]" child-name="[[item.ElementName]]" task-id="[[item.TaskID]]" day-id="[[item.DayID]]"
+                    book-id="[[bookId]]" comment-text="[[item.Comment]]" is-completed="[[item.IsCompleted]]" is-actioned="[[item.IsActioned]]"
+                    show-later show-today=[[item.CanShowToday]] can-reopen=[[item.CanReopen]] is-completed-view={{item.IsCompleted}}
+                    element-data="[[item.Data]]" on-element-updated="_elementUpdated" on-element-delete="_elementDelete" on-element-do-later="_elementDoLater"
+                    on-element-do-today="_elementDoToday">
+                </container-element>
+            </template>
+        </paper-material>
+
+        <p class="current-day">
+            <moment-js date="[[yesterdayAsString]]" date-format="YYYYMMDD" format="dddd Do MMMM, YYYY"></moment-js>
+        </p>
+        <!-- items -->
+        <paper-material elevation="1">
+            <template is="dom-repeat" items="{{history}}">
+                <container-element id="[[item.DayID]]" child-name="[[item.ElementName]]" task-id="[[item.TaskID]]" day-id="[[item.DayID]]"
+                    book-id="[[bookId]]" comment-text="[[item.Comment]]" is-completed="[[item.IsCompleted]]" is-actioned="[[item.IsActioned]]"
+                    show-later show-today=[[item.CanShowToday]] can-reopen=[[item.CanReopen]] is-completed-view={{item.IsCompleted}}
+                    element-data="[[item.Data]]" on-element-updated="_elementUpdated" on-element-delete="_elementDelete" on-element-do-later="_elementDoLater"
+                    on-element-do-today="_elementDoToday">
+                </container-element>
+            </template>
+        </paper-material>
+
+        <!-- action button -->
+        <demo-add-element book-id="[[bookId]]" on-add-selected-element="_addElement"></demo-add-element>
+        <!--
+        <day-items id="dayItems" day-as-string="[[dayAsString]]" book-id="[[bookId]]"></day-items>
+
+        <previous-day-items day-as-string="[[dayAsString]]" book-id="[[bookId]]" on-item-moved-to-today="_itemMovedToToday"></previous-day-items>
+        -->
+
+    </template>
+    <script>
+        Polymer({
+            is: 'demo-day',
+            properties: {
+                dayAsString: {
+                    type: String,
+                    value: '',
+                },
+                yesterdayAsString: {
+                    type: String,
+                    value: '',
+                },
+                bookId: {
+                    type: String,
+                    value: 'demo',
+                },
+            },
+            ready: function () {
+                var date = this._dateToInt(new Date());
+                this.dayAsString = date.toString();
+                this.yesterdayAsString = this._dateToInt(this._addDays(new Date(), -1));
+                this.items = [
+                    { DayID: "1", ElementName: "element-to-do", TaskID: "1", BookID: "demo", Comment: "", IsCompleted: true, IsActioned: false, CanShowToday: false, CanReopen: true, Data: "{ \"text\": \"Track what you get you need to get done\", \"status\": \"OPEN\"}" },
+                    { DayID: "3", ElementName: "element-to-do", TaskID: "3", BookID: "demo", Comment: "", IsCompleted: false, IsActioned: false, CanShowToday: true, CanReopen: true, Data: "{ \"text\": \"And plan what you should\", \"status\": \"OPEN\"}" },
+                    { DayID: "2", ElementName: "element-note", TaskID: "2", BookID: "demo", Comment: "It will be enough to cover the cost of hosting", IsCompleted: false, IsActioned: false, CanShowToday: false, CanReopen: true, Data: "{ \"text\": \"How much does it cost? It is free during the beta!\", \"status\": \"OPEN\"}" },
+                    { DayID: "2", ElementName: "element-note", TaskID: "2", BookID: "demo", Comment: "", IsCompleted: true, IsActioned: false, CanShowToday: false, CanReopen: true, Data: "{ \"text\": \"Sign in with your Google account to try it out\", \"status\": \"OPEN\"}" },
+                ];
+                this.history = [
+                    { DayID: "20", ElementName: "element-to-do", TaskID: "20", BookID: "demo", Comment: "Move it to day, save it for later or delete it if you were never really going to do it", IsCompleted: false, IsActioned: false, CanShowToday: true, CanReopen: true, Data: "{ \"text\": \"I planned on doing this yesterday...\", \"status\": \"OPEN\"}" }
+                ];
+            },
+            _dateToInt: function (date) {
+                var result = date.getFullYear().toString();
+                if (date.getMonth() + 1 < 10) result += "0";
+                result += (date.getMonth() + 1).toString();
+                if (date.getDate() < 10) result += "0";
+                result += date.getDate().toString();
+                return result;
+            },
+            _addDays: function (date, days) {
+                var result = new Date(date);
+                result.setDate(result.getDate() + days);
+                return result;
+            },
+            _addElement: function (event) {
+                console.log("add demo element", event);
+                this.push("items",
+                     { DayID: "1", ElementName: event.detail.item.ElementName, TaskID: "1", BookID: "demo", Comment: "", IsCompleted: false, IsActioned: false, CanShowToday: false, CanReopen: true, Data: "{ \"text\": \"\", \"status\": \"OPEN\"}" }
+                );
+            },
+
+        });
+    </script>
+</dom-module>

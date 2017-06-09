@@ -1,6 +1,16 @@
 {{ define "footer" }}
   <div class="footer">
-     <p>&copy; 2016 Stuff To Be Done | <a href="/about">About</a> | {{if .isLoggedIn }}<a href="/book">app</a> | <a href="/logout">logout</a>{{ else }}<a href="/login">login</a>{{ end }}</p>
+     <p>&copy; 2017 Jot down / today | <!--<a href="/about">About</a> |--> 
+      <a href="/">home</a> | 
+      <a href="/privacy">privacy policy</a> | 
+      <a href="/terms">terms of service</a> | 
+      <a href="/about">about</a> |
+     {{if .isLoggedIn }}
+     <a href="/app/book">app</a> | 
+     <a href="/logout">logout</a>
+     {{ else }}
+     <a href="/app/book">sign in</a>
+     {{ end }}</p>
   </div>
 </body>
 </html>

@@ -131,7 +131,9 @@ func ApiDayHander(c *gin.Context) {
     log.Println(days[i], tasks[i])
     dayTask.Build(days[i], tasks[i])
     log.Println("daytask", dayTask)
-    result = append(result, dayTask)
+    if !tasks[i].IsDeleted {
+      result = append(result, dayTask)
+    }
   }
 
   if err != nil {

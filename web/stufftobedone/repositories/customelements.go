@@ -133,10 +133,10 @@ func (r *CustomElementRepository) GetByName(elementName string) (domain.CustomEl
 func (r *CustomElementRepository) FindBookElements(bookID string) ([]domain.BookElement, error) {
     toDoElement := domain.BookElement{ Name: "To-do", ElementName: "element-to-do", Icon: "check-box" }
     noteElement := domain.BookElement{ Name: "Note", ElementName: "element-note", Icon: "speaker-notes" }
-    meetingElement := domain.BookElement{ Name: "Meeting", ElementName: "element-meeting", Icon: "book" }
-    testElement := domain.BookElement{ Name: "Test", ElementName: "element-test", Icon: "bug-report" }
+    //meetingElement := domain.BookElement{ Name: "Meeting", ElementName: "element-meeting", Icon: "book" }
+    //testElement := domain.BookElement{ Name: "Test", ElementName: "element-test", Icon: "bug-report" }
     
-    bookElements := []domain.BookElement{toDoElement, noteElement, meetingElement, testElement}
+    bookElements := []domain.BookElement{toDoElement, noteElement } //, meetingElement, testElement}
     
     
     return bookElements, nil

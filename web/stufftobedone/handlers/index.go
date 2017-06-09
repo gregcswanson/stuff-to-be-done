@@ -11,5 +11,6 @@ func IndexHandler(c *gin.Context) {
         "title": "The Founder",
         "showregistration": "true",
         "isLoggedIn": user.IsLoggedIn,
+        "logouturl" : user.LogoutUrl,
       })
 }

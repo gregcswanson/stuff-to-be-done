@@ -5,7 +5,7 @@ import (
   //"log"
   "github.com/gin-gonic/gin"
   "stufftobedone/repositories"
-  "time"
+  //"time"
 )
 
 func ProfileIndexsHandler(c *gin.Context) {
@@ -20,8 +20,8 @@ func ProfileIndexsHandler(c *gin.Context) {
         })
   }
   // redirect to the current day
-  todayAsString := time.Now().Format("20060102")
-  c.Redirect(http.StatusFound, "/book/" + defaultBook.ID + "/day/" + todayAsString)
+  //todayAsString := time.Now().Format("20060102")
+  c.Redirect(http.StatusFound, "/book/" + defaultBook.ID + "/live")
   //c.JSON(http.StatusOK, gin.H{
   //  "bookID": defaultBook.ID,
   //})

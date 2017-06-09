@@ -100,8 +100,10 @@
         'daysAddedOrRemoved(days.splices)'
       ],
       ready: function () {
-        this.isLoading = true;
-        this.$.ajaxGetOpenDays.generateRequest();
+        if (this.dayAsString.length !== 0){
+          this.isLoading = true;
+          this.$.ajaxGetOpenDays.generateRequest();
+        }
       },
       _onDayAsStringChanged: function (newValue) {
         if (newValue !== '') {

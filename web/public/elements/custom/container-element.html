@@ -13,7 +13,11 @@
         position: relative;
         min-height: 40px;
       }
-      
+
+      .actioned {
+        margin-left: 40px;
+      }
+
       paper-material.tools {
         position: absolute;
         top: 3px;
@@ -23,12 +27,12 @@
         background: #fff;
         z-index: 1;
       }
-      
+
       paper-button {
         text-transform: none;
-         font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
+        font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
       }
-      
+
       paper-button.actions {
         display: inline-block;
         position: absolute;
@@ -39,12 +43,11 @@
         color: #999;
         padding: 8px;
       }
-      
+
       #backdrop {
         z-index: 1;
       }
-      
-      #commentext {
+      /*#commentext {
         padding: 0 0 0 60px;
       }
       
@@ -55,8 +58,14 @@
           color: var(--secondary-text-color, black);
         }
       }
-      
+      */
+
+      task-comment {
+        padding-bottom: 5px;
+      }
+
       paper-textarea {
+
         --paper-input-container-input: {
           font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
           font-style: italic;
@@ -64,21 +73,31 @@
           color: var(--secondary-text-color, black);
         }
       }
+      #actioned {
+            margin: 6px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: var(--dark-primary-color, black);
+      }
     </style>
-
-    <div id="insertion"></div>
+    <div id="actioned" hidden$="{{!isActioned}}">
+      <iron-icon icon="restore"></iron-icon>
+    </div>
+    <div id="insertion" class$="{{_insertionClasses(isActioned)}}"></div>
     <paper-button class="actions" on-tap="_toggleActions">
       <iron-icon icon="more-vert"></iron-icon>
     </paper-button>
 
     <!-- comments -->
-    <paper-textarea id="commentext" hidden$="{{!showComment}}" placeholder="Add a comment for this day..."
+    <task-comment book-id="[[bookId]]" task-id="[[taskId]]" day-id="[[dayId]]" comment="{{commentText}}" hidden$="{{!showComment}}"></task-comment>
+    <!-- <paper-textarea id="commentext" hidden$="{{!showComment}}" placeholder="Add a comment for this day..."
      value="{{commentText}}"
       on-change="_commentChanged" no-label-float>
-    </paper-textarea>
+    </paper-textarea> -->
 
     <!-- actions -->
-    <iron-overlay-backdrop id="backdrop" on-tap="_toggleActions"></iron-overlay-backdrop> 
+    <iron-overlay-backdrop id="backdrop" on-tap="_toggleActions"></iron-overlay-backdrop>
     <paper-material class="tools" elevation="2" hidden$="{{!showActions}}">
       <paper-button on-tap="_toggleShowComment" hidden$="{{!canComment}}">
         <span>Add comment</span>
@@ -89,7 +108,7 @@
       <paper-button on-tap="_doLater" hidden$="{{!canShowLater}}">
         <span>Do later</span>
       </paper-button>
-      <paper-button on-tap="_doToday" hidden$="{{!showToday}}">
+      <paper-button on-tap="_doToday" hidden$="{{!canShowToday}}">
         <span>Do today</span>
       </paper-button>
       <paper-button on-tap="_reopen" hidden$="{{!canReopen}}">
@@ -129,6 +148,11 @@
           value: false,
           observer: 'isCompletedChanged',
         },
+        isActioned: {
+          type: Boolean,
+          value: false,
+          observer: '_isActionedChanged',
+        },
         commentText: {
           type: String,
           value: '',
@@ -154,7 +178,9 @@
         showToday: {
           type: Boolean,
           value: false,
+          observer: '_showTodayChanged'
         },
+
         isCompletedView: {
           type: Boolean,
           value: false,
@@ -175,11 +201,13 @@
       },
       ready: function () {
         var self = this;
+        self._showTodayChanged();
         //console.log('container-element ready', this.childName);
         this.importHref(this.resolveUrl('/element/' + this.childName + '.html'));
         var el = this.$.el = document.createElement(this.childName);
         //console.log(el);
         el.isCompleted = this.isCompleted;
+        el.isActioned = this.isActioned;
         el.isCompletedView = this.isCompletedView;
         if (this.elementData && this.elementData.length > 0) {
           var data = JSON.parse(this.elementData);
@@ -221,25 +249,41 @@
 
 
       },
-      _dayIdChanged: function() {
+      _dayIdChanged: function () {
         this.canComment = this.dayId !== '' && !this.isCompletedView;
       },
-      _commentTextChanged: function() {
+      _showTodayChanged: function () {
+        this.canShowToday = this.showToday && !this.isActioned;
+      },
+      _commentTextChanged: function () {
         this.showComment = this.showComment || (this.commentText && this.commentText !== '');
       },
-      _toggleShowComment: function() {
+      _toggleShowComment: function () {
         this.showComment = !this.showComment;
-        if (!this.showComment){
+        if (!this.showComment) {
           this.commentText = '';
         }
         this.showActions = false;
         this.$.backdrop.close();
       },
-      _commentChanged: function(){
+      _insertionClasses: function(isActioned){
+        if(isActioned){
+          return "actioned";
+        }
+        return "normal";
+      },
+      _isActionedChanged: function (newValue) {
+        if (this.$.el) {
+          this.$.el.isActioned = newValue;
+        }
+        this._showTodayChanged();
+        this.canShowLater = !this.isActioned && !this.isCompleted && this.showLater;
+      },
+      /*_commentChanged: function(){
         // save the commment
         console.log('save comment', this.commentText);
         this.$.appApi.saveComment(this.dayId, this.taskId, this.commentText);
-      },
+      },*/
       _toggleActions: function () {
         this.showActions = !this.showActions;
         if (this.showActions) {
@@ -253,10 +297,10 @@
         if (this.$.el) {
           this.$.el.isCompleted = newValue;
         }
-        this.canShowLater = !this.isCompleted && this.showLater;
+        this.canShowLater = !this.isActioned && !this.isCompleted && this.showLater;
       },
-      _showLaterChanged: function(newValue) {
-        this.canShowLater = !this.isCompleted && this.showLater;
+      _showLaterChanged: function (newValue) {
+        this.canShowLater = !this.isActioned && !this.isCompleted && this.showLater;
       },
       isCompletedViewChanged: function (newValue) {
         //console.log('isCompletedView changed', newValue);

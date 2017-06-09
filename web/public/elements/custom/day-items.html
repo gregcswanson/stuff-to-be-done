@@ -28,7 +28,7 @@
         color: #777;
       }
       
-      add-element {
+      demo-add-element {
         display: block;
         position: fixed;
         bottom: 10px;
@@ -46,7 +46,9 @@
       <paper-material elevation="1" hidden$="{{isEmpty}}">
         <template is="dom-repeat" items="{{items}}">
           <container-element id="[[item.DayID]]" child-name="[[item.ElementName]]" task-id="[[item.TaskID]]" day-id="[[item.DayID]]"
-            book-id="[[bookId]]" comment-text="[[item.Comment]]" is-completed="[[item.IsCompleted]]" show-later show-today=[[canShowToday]]
+            book-id="[[bookId]]" comment-text="[[item.Comment]]" is-completed="[[item.IsCompleted]]"
+            is-actioned="[[item.IsActioned]]"
+             show-later show-today=[[canShowToday]]
             can-reopen=[[item.CanReopen]] is-completed-view={{item.IsCompleted}} element-data="[[item.Data]]" on-element-updated="_elementUpdated"
             on-element-delete="_elementDelete" on-element-do-later="_elementDoLater" on-element-do-today="_elementDoToday">
           </container-element>
@@ -78,7 +80,8 @@
     <iron-ajax id="laterRestore" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="PUT"
       url="/api/v1/book/[[bookId]]/later/[[currentTaskId]]/restore" handle-as="json" on-response="_laterRestoreResponse"></iron-ajax>
 
-    <app-api id="appApi" book-id="[[bookId]]" on-task-deleted="_taskDeleted" on-task-do-today-completed="_taskDoTodayCompleted"></app-api>
+    <app-api id="appApi" book-id="[[bookId]]" on-task-deleted="_taskDeleted" 
+      on-task-do-today-completed="_taskDoTodayCompleted"></app-api>
 
   </template>
   <script>
@@ -204,12 +207,12 @@
       },
       _ajaxDoLaterResponse: function (data) {
         var result = data.detail.response.data;
-        console.log('_ajaxDoLaterResponse', result);
         var item = this.items.find(function (f) { return f.TaskID == result.TaskID });
-        console.log('unshift item', item);
         if (item) {
           var index = this.items.indexOf(item);
-          this.splice('items', index, 1);
+          console.log('update item as later', result);
+          //this.splice('items', index, 1); // Dont delete it, just update it
+          this.splice('items', index, 1, result);
         }
         // trigger an update message to the later module if it exists
       },
@@ -260,8 +263,10 @@
         var item = this.items.find(function (f) { return f.TaskID == taskID });
         if (item) {
           var index = this.items.indexOf(item);
-          console.log('remove item', item, index);
-          this.splice('items', index, 1);
+          console.log('update item as later', data);
+          //this.splice('items', index, 1);
+          // Dont delete it, just update it
+          this.splice('items', index, 1, data);
         }
       },
       _dateToInt: function (date) {

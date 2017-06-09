@@ -19,6 +19,12 @@ indexes:
   ancestor: yes
   properties:
   - name: DateAsInt
+  - name: Created
+
+- kind: Days
+  ancestor: yes
+  properties:
+  - name: DateAsInt
   - name: IsActioned
   - name: Created
 

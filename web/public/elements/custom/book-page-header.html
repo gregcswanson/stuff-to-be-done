@@ -79,22 +79,22 @@
 
       <!-- <paper-toolbar> -->
       <!-- <paper-icon-button icon="maps:directions-railway"></paper-icon-button> -->
-      <a href="/book" class="header-title">
+      <a href="/app/book" class="header-title">
         <span class="title">[[title]]</span>
       </a>
       <div class="nav-buttons">
-        <a href="/book/[[bookId]]/live" class$="{{activeClass('live')}}">
+        <a href="/app/book/[[bookId]]/live" class$="{{activeClass('live')}}">
           <iron-icon icon="create"></iron-icon>
         </a>
 
-        <a href="/book/[[bookId]]/later" class$="{{activeClass('later')}}">
+        <a href="/app/book/[[bookId]]/later" class$="{{activeClass('later')}}">
           <span hidden$="{{noLaterItems}}" class="count">[[count]]</span>
           <iron-icon icon="restore"></iron-icon>
         </a>
-        <a href="/book/[[bookId]]/history" class$="{{activeClass('history')}}">
+        <a href="/app/book/[[bookId]]/history" class$="{{activeClass('history')}}">
           <iron-icon icon="today"></iron-icon>
         </a>
-        <a href="/book/[[bookId]]/trash" class$="{{activeClass('trash')}}">
+        <a href="/app/book/[[bookId]]/trash" class$="{{activeClass('trash')}}">
           <iron-icon icon="delete"></iron-icon>
         </a>
       </div>

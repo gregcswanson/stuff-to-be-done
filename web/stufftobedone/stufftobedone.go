@@ -26,15 +26,10 @@ func init() {
   apiV1book := r.Group("api/v1/book/:bookId")
   {
     // add a middleware to setup the book context
-    //    apiV1book.GET("/day/:day", handlers.DayHandler)
     apiV1book.GET("/elements", handlers.BookElementsHandler)
     // later actions
     apiV1book.GET("/later", handlers.ApiLaterHandler)
     apiV1book.POST("/later", handlers.BookLaterPostHandler)
-    //apiV1book.PUT("/later/:taskId/restore", handlers.BookLaterRestoreHandler)
-    //apiV1book.PUT("/later/:taskId/dotoday", handlers.BookLaterDoTodayHandler)
-    //apiV1book.PUT("/later/:taskId", handlers.BookLaterPutHandler)
-    //apiV1book.DELETE("/later/:taskId", handlers.BookLaterDeleteHandler)
     apiV1book.GET("/latercount", handlers.BookLaterCountHandler)
     // trash handlers
     apiV1book.GET("/trash", handlers.ApiTrashGetHandler) // get trash items
@@ -56,22 +51,13 @@ func init() {
     
   }
 
-  r.GET("/book", handlers.BookIndexsHandler) // will redirect to the default book for the user
-  //r.GET("/live/:book", handlers.BookLiveHander) // will replace the sub pages
-  //r.GET("/trash/:book", handlers.TrashHandler)
-  //r.GET("/later/:book", handlers.LaterHandler) // will replace the sub pages
-  book := r.Group("book/:book")
+  r.GET("app/book", handlers.BookIndexsHandler) // will redirect to the default book for the user
+  book := r.Group("app/book/:book")
   {
     book.GET("/live", handlers.BookLiveHander) // will replace the sub pages
     book.GET("/trash", handlers.TrashHandler)
     book.GET("/later", handlers.LaterHandler)
     book.GET("/history", handlers.HistoryHandler)
-      // add a middleware to setup the book context
-      
-      //book.GET("/:day/later", handlers.LaterHandler)
-      //book.GET("/:day/completed", handlers.CompletedHandler)
-      //book.GET("/:day/day", handlers.DayHandler)
-      //book.GET("/:day/previous", handlers.PreviousHandler)
   }
 
   appProfile := r.Group("profile")
@@ -81,6 +67,8 @@ func init() {
 
   r.GET("/login", handlers.LoginHandler)
   r.GET("/logout", handlers.LogoutHandler)
+  r.GET("/terms", handlers.TermsHandler)
+  r.GET("/privacy", handlers.PrivacyHandler)
   r.GET("/about", handlers.AboutHandler)
   r.GET("/error", handlers.TestErrorPage)
   r.GET("/admin/registrations", handlers.RegistrationsHandler)

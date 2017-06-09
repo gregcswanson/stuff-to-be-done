@@ -1,0 +1,101 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="/elements/custom/app-theme.html">
+<dom-module id="task-comment">
+    <template include="app-theme">
+        <style>
+             :host {
+                display: block;
+                position: relative;
+            }
+
+            .bubble {
+                margin: 0 0 0 60px;
+                display: block;
+                position: relative;
+                padding: 4px;
+                background-color: var(--secondary-text-color, black);;
+            }
+
+            .bubble>input , .bubble>textarea {
+                position: relative;
+                display: block;
+                border: none;
+                padding: 0;
+                margin: 0;
+                height: auto;
+                background-color: var(--secondary-text-color, black);
+                width: 100%;
+                font-style: italic;
+                font-size: 10px;
+                color: white;
+                    line-height: 14px;
+            }
+            paper-textarea {
+                --paper-input-container-input: {
+                    font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
+                    font-style: italic;
+                    font-size: 10px;
+                    color: white;
+                    line-height: 14px;
+                }
+                --paper-input-container: {
+                    padding: 0;
+                }
+                --paper-input-container-focus-color: white;
+            }
+           
+            .tri-right.left-top:after{
+                content: ' ';
+                position: absolute;
+                width: 0;
+                height: 0;
+                left: -10px;
+                right: auto;
+                top: 0px;
+                bottom: auto;
+                border: 10px solid;
+                border-color: var(--secondary-text-color, black) transparent transparent transparent;
+            }
+        </style>
+        <!-- bubble -->
+        <div class="bubble tri-right left-top">
+            <!-- <textarea type="text" value="{{comment::input}}" on-blur="_commentChanged"
+             placeholder="Add a comment for this day...">
+             </textarea> -->
+             <paper-textarea id="commentext" hidden$="{{!showComment}}" placeholder="Add a comment for this day..."
+                value="{{comment}}"
+                on-blur="_commentChanged" no-label-float>
+            </paper-textarea>
+        </div>
+        <!-- api -->
+        <app-api id="appApi" book-id="[[bookId]]"></app-api>
+    </template>
+    <script>
+        Polymer({
+            is: 'task-comment',
+            properties: {
+                bookId: {
+                    type: String,
+                    value: '',
+                },
+                dayId: {
+                    type: String,
+                    value: '',
+                },
+                taskId: {
+                    type: String,
+                    value: '',
+                },
+                comment: {
+                    type: String,
+                    value: '',
+                    notify: true,
+                }
+            },
+            _commentChanged: function(){
+                console.log('save comment', this.comment);
+                this.$.appApi.saveComment(this.dayId, this.taskId, this.comment);
+            }
+        });
+    </script>
+</dom-module>

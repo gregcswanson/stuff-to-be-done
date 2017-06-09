@@ -14,13 +14,10 @@ func BookIndexsHandler(c *gin.Context) {
   // get or create the default book for this user
   defaultBook, err := bookRepository.GetDefault(user)
   if err != nil {
-    c.JSON(500, gin.H{
-          "message": err,
-        })
+    ErrorPage(c, err)
   }
   // redirect to the current day
-  //todayAsString := time.Now().Format("20060102")
-  c.Redirect(http.StatusFound, "/book/" + defaultBook.ID + "/live") //"/"  + todayAsString + "/day")
+  c.Redirect(http.StatusFound, "/app/book/" + defaultBook.ID + "/live")
 }
 
 func BookLiveHander(c *gin.Context) {
