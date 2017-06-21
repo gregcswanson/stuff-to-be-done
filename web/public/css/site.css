@@ -1,5 +1,7 @@
 body {
     background: #ddd;
+    background-image: radial-gradient(circle, #eee 0%, #ddd 100%);
+    height: 100vh;
     padding: 0;
     margin: 0;
     font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
