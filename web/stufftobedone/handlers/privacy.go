@@ -11,5 +11,6 @@ func PrivacyHandler(c *gin.Context) {
         "title": "Privacy Policy",
         "logouturl" : user.LogoutUrl,
         "isLoggedIn": user.IsLoggedIn,
+        "isProduction": user.IsProduction,
   })
 }

@@ -3,4 +3,12 @@
 <p style="text-align: center;">
   This site is in beta, if you would like to connect contact us on <a href="mailto:jotdowntoday@gmail.com">jotdowntoday@gmail.com</a>
 </p>
+<p>
+  {{ if .isProduction }}
+    Production
+  {{ else }}
+    Development
+  {{ end }}
+</p>
 {{ template "footer" . }}
+

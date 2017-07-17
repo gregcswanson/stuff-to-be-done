@@ -12,5 +12,6 @@ func IndexHandler(c *gin.Context) {
         "showregistration": "true",
         "isLoggedIn": user.IsLoggedIn,
         "logouturl" : user.LogoutUrl,
+        "isProduction": user.IsProduction,
       })
 }

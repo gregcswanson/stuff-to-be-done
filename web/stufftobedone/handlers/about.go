@@ -11,5 +11,6 @@ func AboutHandler(c *gin.Context) {
         "title": "About",
         "logouturl" : user.LogoutUrl,
         "isLoggedIn": user.IsLoggedIn,
+        "isProduction": user.IsProduction,
   })
 }

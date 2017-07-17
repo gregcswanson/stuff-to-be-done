@@ -1,4 +1,4 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
 <dom-module id="day-items">
   <template>
     <style>
@@ -41,7 +41,7 @@
     <!-- loading -->
     <p class="loading" hidden$="{{!isLoading}}">Loading...</p>
 
-    <div hiddem$="{{isLoading}}">
+    <div hidden$="{{isLoading}}">
       <!-- items -->
       <paper-material elevation="1" hidden$="{{isEmpty}}">
         <template is="dom-repeat" items="{{items}}">

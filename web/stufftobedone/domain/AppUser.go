@@ -8,4 +8,5 @@ type AppUser struct {
     Nickname string
     LoginUrl string `datastore:"-"`
     LogoutUrl string `datastore:"-"`
+    IsProduction bool  `datastore:"-"`
 }

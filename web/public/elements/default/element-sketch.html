@@ -1,5 +1,5 @@
 <!-- <link rel="import" href="/elements/custom/app-theme.html"> -->
-<dom-module id="element-meeting">
+<dom-module id="element-sketch">
     <template>
         <style include="app-theme">
              :host {
@@ -14,21 +14,6 @@
                 width: 100%;
                 position: relative;
                 display: block;
-            }
-
-            div.stripes {
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                left: 0;
-                width: 40px;
-                background: repeating-linear-gradient(
-                135deg,
-                #fff,
-                #fff 10px,
-                #F57C00 10px,
-                #F57C00 20px
-                );
             }
 
             div.to-do-container>paper-button {
@@ -53,10 +38,11 @@
                 white-space: pre-line;
                 margin: 0 0 0 40px;
                 color: var(--secondary-text-color, black);
-                border-left: 5px solid var(--dark-primary-color, gray);
+                border-left: 3px dotted var(--dark-primary-color, gray);
                 padding-left: 10px;
-                font-style: normal;
+                font-style: italic;
                 font-size: 13px;
+                min-height: 18px;
                 overflow-wrap: break-word;
             }
 
@@ -68,122 +54,56 @@
                 display: block;
                 margin: 0 0 0 40px;
             }
-            div.to-do-container>p.title{
-                font-weight: bold;
-                font-style: normal;
-                padding: 4px 0 2px 10px;
-                font-size: 15px;
-                min-height: 18px;
-            }
-            div.to-do-container>p.subtitle{
-                font-style: italic;
-                padding: 2px 0 2px 10px;
-                font-size: 11px;
-            }
-            div.to-do-container>p.notes{
-                padding: 2px 0 4px 10px;
-                font-size: 13px;
-                min-height: 18px;
-            }
-
-            paper-button {
-                min-width: 1em;
-                background: var(--dark-primary-color, gray);
-                border-radius: 3px;
-                color: white;
-            }
 
             paper-textarea {
-                border-left: 5px solid var(--dark-primary-color, gray);
-                padding-left: 10px;
-            }
-
-            paper-textarea#meetingTitle {
-                border-left: 5px solid var(--dark-primary-color, gray);
-                padding-left: 10px;
-            }
-
-            paper-textarea#meetingAttendees {
-                border-left: 5px solid var(--dark-primary-color, gray);
+                border-left: 3px dotted var(--dark-primary-color, gray);
                 padding-left: 10px;
             }
 
             paper-textarea {
                 --paper-input-container-input: {
-                    font-style: normal;
+                    font-style: italic;
                     font-size: 13px;
                     font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
                     color: var(--secondary-text-color, black);
                 }
             }
-
-            paper-textarea#meetingTitle {
-                --paper-input-container-input: {
-                    font-size: 15px;
-                    font-weight: bold;
-                    font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
-                    color: var(--secondary-text-color, black);
-                }
+            granite-ink {
+                display: block;
+                min-height: 100px;
             }
-
-            paper-textarea#meetingAttendees {
-                --paper-input-container-input: {
-                    font-size: 11px;
-                    line-height: 18px;
-                    font-style: italic;
-                    font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
-                    color: var(--secondary-text-color, black);
-                }
-            }
-</style>
-<div class="stripes"></div>
+        </style>
         <div hidden$="{{!isActioned}}">
             <div class="to-do-container actioned">
-                <p class="title">{{elementData.title}}</p>
-                <p class="subtitle">{{elementData.subTitle}}</p>
-                <p class="notes">{{elementData.text}}</p>
+                <p>{{elementData.text}}</p>
             </div>
         </div>
         <div hidden$="{{isActioned}}">
             <div class="to-do-container" hidden$="{{!isCompletedView}}">
                 <paper-button on-tap="_unlock">
-                    <iron-icon icon="face"></iron-icon>
+                    <iron-icon icon="gesture"></iron-icon>
                 </paper-button>
-                <p class="title">{{elementData.title}}</p>
-                <p class="subtitle">{{elementData.subTitle}}</p>
-                <p class="notes">{{elementData.text}}</p>
-                <!--<paper-button class="meetingStatus" on-tap="_unlock">
-                    <span>Complete</span>
-                </paper-button>-->
+                <!-- read only -->
             </div>
             <div class="to-do-container" hidden$="{{isCompletedView}}">
                 <paper-button on-tap="_lock">
                     <iron-icon icon="create"></iron-icon>
                 </paper-button>
-                <paper-textarea id="meetingTitle" type="text" 
-                    placeholder="Meeting title..." 
-                    value="{{elementData.title::input}}"
-                    on-change="_textChanged" on-blur="_blur" no-label-float></paper-textarea>
-                <paper-textarea id="meetingAttendees" type="text" 
-                    placeholder="Attendees..." 
-                    value="{{elementData.subTitle::input}}"
-                    on-change="_textChanged" on-blur="_blur" no-label-float></paper-textarea>
-                <paper-textarea id="notetext" type="text" 
-                    placeholder="Type a meeting, toggle the pencil to lock it..." 
-                    value="{{elementData.text::input}}"
-                    on-change="_textChanged" on-blur="_blur" no-label-float></paper-textarea>
+                <granite-ink powered></granite-ink>
+                <!--<paper-textarea id="notetext" type="text" placeholder="Type a meeting, toggle the pencil to lock it..." value="{{elementData.text::input}}"
+                    on-change="_textChanged" on-blur="_blur" no-label-float></paper-textarea>-->
             </div>
         </div>
 
     </template>
     <script>
         Polymer({
-            is: 'element-meeting',
+            is: 'element-sketch',
             properties: {
                 elementData: {
                     type: Object,
                     value: function () {
-                        return { text: '', title: '', subTitle: '', status: 'OPEN' }
+                        return { text: '', status: 'OPEN' }
                     },
                 },
                 isCompleted: {

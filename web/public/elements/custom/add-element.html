@@ -1,5 +1,5 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="/elements/custom/app-theme.html">
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="app-theme.html">
 <dom-module id="add-element">
   <template>
     <style include="app-theme">
@@ -9,23 +9,29 @@
 
         paper-material.actions {
           display: block;
-          position: absolute;
+          position: fixed;
           bottom: 90px;
           right: 20px;
           width: 200px;
+          z-index: 100;
         }
 
         paper-fab {
           display: block;
-          position: absolute;
+          position: fixed;
           bottom: 20px;
           right: 20px;
           color: white !important;
+          z-index: 100;
           --paper-fab-background: var(--accent-color, #607d8b);
         }
 
         paper-icon-item span {
             font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
+        }
+
+        iron-overlay-backdrop {
+          z-index: 90;
         }
     </style>
     
@@ -47,7 +53,7 @@
     <!-- ~ action button -->
     <iron-ajax
         auto
-        url="http://localhost:8080/api/v1/book/[[bookId]]/elements"
+        url="/api/v1/book/[[bookId]]/elements"
         handle-as="json"
         last-response="{{elementTypes}}">
     </iron-ajax>

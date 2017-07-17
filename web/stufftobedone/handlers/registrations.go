@@ -28,6 +28,7 @@ func RegistrationsHandler(c *gin.Context) {
     "isLoggedIn": user.IsLoggedIn,
     "hasData": len(data) > 0,
     "data": data,
+        "isProduction": user.IsProduction,
   })
 }
 

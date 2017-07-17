@@ -43,7 +43,7 @@ func UserMiddleware() gin.HandlerFunc {
             r := repositories.NewUserRepository(c.Request)
             appUser, err = r.Get(appUser)
         }  
-        
+        appUser.IsProduction = !appengine.IsDevAppServer()
         c.Set("user", appUser)
 
         c.Next()

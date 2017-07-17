@@ -33,6 +33,7 @@ func PreviousHandler(c *gin.Context) {
         "yesterdayAsString": yesterday.DateAsString,
         "logouturl" : user.LogoutUrl,
         "bookID": bookID,
+        "isProduction": user.IsProduction,
   })
 }
 

@@ -29,5 +29,6 @@ func BookLiveHander(c *gin.Context) {
         "logouturl" : user.LogoutUrl,
         "isLoggedIn": true,
         "bookID": bookID,
+        "isProduction": user.IsProduction,
   })
 }

@@ -20,6 +20,7 @@ func LaterHandler(c *gin.Context) {
         "logouturl" : user.LogoutUrl,
         //"dayAsString": dayAsString,
         "bookID": bookID,
+        "isProduction": user.IsProduction,
   })
 }
 

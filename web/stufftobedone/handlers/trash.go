@@ -14,6 +14,7 @@ func TrashHandler(c *gin.Context) {
         "title": "Trash",
         "logouturl" : user.LogoutUrl,
         "bookID": bookID,
+        "isProduction": user.IsProduction,
   })
 }
 

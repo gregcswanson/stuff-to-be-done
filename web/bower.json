@@ -20,6 +20,7 @@
     "paper-dialog": "PolymerElements/paper-dialog#^1.1.0",
     "moment-js": "^0.7.2",
     "iron-location": "PolymerElements/iron-location#^1.0.0",
-    "app-datepicker": "motss/app-datepicker#^2.9.0"
+    "app-datepicker": "motss/app-datepicker#^2.9.0",
+    "granite-ink": "LostInBrittany/granite-ink#^0.2.0"
   }
 }

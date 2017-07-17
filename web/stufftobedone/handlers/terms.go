@@ -11,5 +11,6 @@ func TermsHandler(c *gin.Context) {
         "title": "Terms",
         "logouturl" : user.LogoutUrl,
         "isLoggedIn": user.IsLoggedIn,
+        "isProduction": user.IsProduction,
   })
 }

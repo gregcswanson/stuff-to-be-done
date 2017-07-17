@@ -1,5 +1,5 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="/elements/custom/app-theme.html">
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../elements/custom/app-theme.html">
 
 <dom-module id="container-element">
   <template>
@@ -203,7 +203,11 @@
         var self = this;
         self._showTodayChanged();
         //console.log('container-element ready', this.childName);
-        this.importHref(this.resolveUrl('/element/' + this.childName + '.html'));
+
+        // ADD THIS BACK TO LOAD ON DEMAND, I THINK THIS WILL
+        //this.importHref(this.resolveUrl('/element/' + this.childName + '.html'));
+        // BE CHANGED TO A COMPOSITE LOAD ON REFRESH OF CUSTOM ELEMENTS WHEN IMPLEMENTED
+        
         var el = this.$.el = document.createElement(this.childName);
         //console.log(el);
         el.isCompleted = this.isCompleted;
