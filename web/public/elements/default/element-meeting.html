@@ -53,7 +53,7 @@
                 white-space: pre-line;
                 margin: 0 0 0 40px;
                 color: var(--secondary-text-color, black);
-                border-left: 5px solid var(--dark-primary-color, gray);
+                x-border-left: 5px solid var(--dark-primary-color, gray);
                 padding-left: 10px;
                 font-style: normal;
                 font-size: 13px;
@@ -75,6 +75,13 @@
                 font-size: 15px;
                 min-height: 18px;
             }
+
+            div.to-do-container.actioned>p.title {
+                min-height: 28px;
+                padding-left: 50px;
+                padding-top: 10px;
+            }
+
             div.to-do-container>p.subtitle{
                 font-style: italic;
                 padding: 2px 0 2px 10px;
@@ -93,18 +100,38 @@
                 color: white;
             }
 
+            paper-button.meetingStatus.close {
+                margin-bottom: 3px;
+                --paper-button: {
+                    padding: 3px 10px;
+                    font-size: 11px;
+                    text-transform: none;
+                }
+            }
+
+            paper-button.meetingStatus.open {
+                margin-bottom: 3px;
+                background: white;
+                color: var(--secondary-text-color, gray);
+                --paper-button: {
+                    padding: 3px 10px;
+                    font-size: 11px;
+                    text-transform: none;
+                }
+            }
+
             paper-textarea {
-                border-left: 5px solid var(--dark-primary-color, gray);
+                x-border-left: 5px solid var(--dark-primary-color, gray);
                 padding-left: 10px;
             }
 
             paper-textarea#meetingTitle {
-                border-left: 5px solid var(--dark-primary-color, gray);
+                x-border-left: 5px solid var(--dark-primary-color, gray);
                 padding-left: 10px;
             }
 
             paper-textarea#meetingAttendees {
-                border-left: 5px solid var(--dark-primary-color, gray);
+                x-border-left: 5px solid var(--dark-primary-color, gray);
                 padding-left: 10px;
             }
 
@@ -135,31 +162,36 @@
                     color: var(--secondary-text-color, black);
                 }
             }
+
+            div.meeting-actions {
+                text-align: right;
+                margin-bottom: 2px;
+            }
 </style>
 <div class="stripes"></div>
         <div hidden$="{{!isActioned}}">
             <div class="to-do-container actioned">
-                <p class="title">{{elementData.title}}</p>
-                <p class="subtitle">{{elementData.subTitle}}</p>
-                <p class="notes">{{elementData.text}}</p>
+                <p class="title">[Postponed] {{elementData.title}}</p>
             </div>
         </div>
         <div hidden$="{{isActioned}}">
             <div class="to-do-container" hidden$="{{!isCompletedView}}">
-                <paper-button on-tap="_unlock">
-                    <iron-icon icon="face"></iron-icon>
-                </paper-button>
+                <!--<paper-button on-tap="_unlock">
+                    <iron-icon icon="social:people"></iron-icon>
+                </paper-button>-->
                 <p class="title">{{elementData.title}}</p>
                 <p class="subtitle">{{elementData.subTitle}}</p>
                 <p class="notes">{{elementData.text}}</p>
-                <!--<paper-button class="meetingStatus" on-tap="_unlock">
-                    <span>Complete</span>
-                </paper-button>-->
+                <div class="meeting-actions">
+                    <paper-button class="meetingStatus open" on-tap="_unlock">
+                        <span>Re-open meeting</span>
+                    </paper-button>
+                </div>
             </div>
             <div class="to-do-container" hidden$="{{isCompletedView}}">
-                <paper-button on-tap="_lock">
+                <!-- <paper-button on-tap="_lock">
                     <iron-icon icon="create"></iron-icon>
-                </paper-button>
+                </paper-button> -->
                 <paper-textarea id="meetingTitle" type="text" 
                     placeholder="Meeting title..." 
                     value="{{elementData.title::input}}"
@@ -172,9 +204,13 @@
                     placeholder="Type a meeting, toggle the pencil to lock it..." 
                     value="{{elementData.text::input}}"
                     on-change="_textChanged" on-blur="_blur" no-label-float></paper-textarea>
+                <div class="meeting-actions">
+                    <paper-button class="meetingStatus close" on-tap="_lock">
+                        <span>Close meeting</span>
+                    </paper-button>
+                </div>
             </div>
         </div>
-
     </template>
     <script>
         Polymer({
