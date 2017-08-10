@@ -13,7 +13,10 @@
                 display: block;
                 position: relative;
                 padding: 4px;
-                background-color: var(--secondary-text-color, black);;
+                background-color: var(--disabled-text-color, black);
+                border-top-right-radius: 5px;
+                border-bottom-right-radius: 5px;
+                border-bottom-left-radius: 5px;
             }
 
             .bubble>input , .bubble>textarea {
@@ -23,20 +26,20 @@
                 padding: 0;
                 margin: 0;
                 height: auto;
-                background-color: var(--secondary-text-color, black);
+                background-color: var(--disabled-text-color, black);
                 width: 100%;
                 font-style: italic;
-                font-size: 10px;
+                font-size: 14px;
                 color: white;
-                    line-height: 14px;
+                    line-height: 16px;
             }
             paper-textarea {
                 --paper-input-container-input: {
                     font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
                     font-style: italic;
-                    font-size: 10px;
+                    font-size: 14px;
                     color: white;
-                    line-height: 14px;
+                    line-height: 16px;
                 }
                 --paper-input-container: {
                     padding: 0;
@@ -54,14 +57,11 @@
                 top: 0px;
                 bottom: auto;
                 border: 10px solid;
-                border-color: var(--secondary-text-color, black) transparent transparent transparent;
+                border-color: var(--disabled-text-color, black) transparent transparent transparent;
             }
         </style>
         <!-- bubble -->
         <div class="bubble tri-right left-top">
-            <!-- <textarea type="text" value="{{comment::input}}" on-blur="_commentChanged"
-             placeholder="Add a comment for this day...">
-             </textarea> -->
              <paper-textarea id="commentext" hidden$="{{!showComment}}" placeholder="Add a comment for this day..."
                 value="{{comment}}"
                 on-blur="_commentChanged" no-label-float>

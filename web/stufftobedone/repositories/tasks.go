@@ -12,11 +12,13 @@ import (
 
 type TaskRepository struct {
   request    *http.Request
+  cache      *AppCache
 }
 
 func NewTaskRepository(request *http.Request) *TaskRepository {
 	r := new(TaskRepository)
 	r.request = request
+    r.cache = NewAppCache(request)
 	return r
 }
 
@@ -42,6 +44,21 @@ func (r *TaskRepository) Later(bookID string) ([]domain.Task, error) {
     }
     
     return tasks, nil
+}
+
+func (r *TaskRepository) LaterCount(bookID string)(int, error) {
+    // check for cached result
+    cacheValue, foundInCache := r.cache.GetInt("latercount", bookID)
+    if foundInCache {
+        return cacheValue, nil
+    }
+    laterItems, err := r.Later(bookID)
+    if err != nil {    
+        return 0, err
+    }
+    r.cache.SetInt("latercount", bookID, len(laterItems))
+    
+    return len(laterItems), nil
 }
 
 func (r *TaskRepository) Completed(bookID string) ([]domain.Task, error) {
@@ -140,7 +157,9 @@ func (r *TaskRepository) FindById(bookID string, taskID string) (domain.Task, er
 }
 
 func (r *TaskRepository) Create(elementName string, bookID string, dayAsInt int, projectID string, userID string) (domain.Task, error) {
-    
+    // clear the count cache
+    r.cache.Clear("latercount", bookID)
+
     // to-do validate book, element name and projectID
 
     // to-do if the day is not null add to the day reference table also
@@ -169,7 +188,10 @@ func (r *TaskRepository) Create(elementName string, bookID string, dayAsInt int,
     return task, nil
 }
 
-func (r *TaskRepository) Update(task domain.Task) (domain.Task, error){
+func (r *TaskRepository) Update(task domain.Task, bookID string) (domain.Task, error){
+    // clear the count cache
+    r.cache.Clear("latercount", bookID)
+
     globalContext := appengine.NewContext(r.request)
     key, err := datastore.DecodeKey(task.ID)
     if err != nil {
@@ -179,7 +201,10 @@ func (r *TaskRepository) Update(task domain.Task) (domain.Task, error){
     return task, err
 }
 
-func (r *TaskRepository) Delete(taskID string) (error){
+func (r *TaskRepository) Delete(taskID string, bookID string) (error){
+    // clear the count cache
+    r.cache.Clear("latercount", bookID)
+
     globalContext := appengine.NewContext(r.request)
   
     key , err := datastore.DecodeKey(taskID)

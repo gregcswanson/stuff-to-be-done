@@ -203,7 +203,7 @@ func ApiDayPutHandler(c *gin.Context) {
   // if this day is the current day for the task, toggle the task coomplete
   
 
-  task, err = taskRepository.Update(task)
+  task, err = taskRepository.Update(task, bookID)
   if err != nil {
     c.JSON(500, gin.H{
       "message": err,
@@ -288,7 +288,7 @@ func ApiDayDeleteHandler(c *gin.Context) {
   task.UpdatedBy = user.ID
   task.IsDeleted = true
 
-  task, err = taskRepository.Update(task)
+  task, err = taskRepository.Update(task, bookID)
   if err != nil {
     c.JSON(500, gin.H{
       "message": err,

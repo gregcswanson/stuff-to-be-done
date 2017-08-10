@@ -58,14 +58,14 @@ func BookLaterHandler(c *gin.Context) {
 func BookLaterCountHandler(c *gin.Context) {
   bookID := c.Param("bookId")
   r := repositories.NewTaskRepository(c.Request)
-  laterItems, err := r.Later(bookID)
+  laterCount, err := r.LaterCount(bookID)
   if err != nil {
     c.JSON(500, gin.H{
       "message": err,
     })
   } else {
     c.JSON(http.StatusOK, gin.H{
-        "data": len(laterItems),
+        "data": laterCount,
     })
   }
 }
@@ -139,7 +139,7 @@ func BookLaterPutHandler(c *gin.Context) {
   task.UpdatedBy = user.ID
   log.Println("Updated task", task)
 
-  task, err = taskRepository.Update(task)
+  task, err = taskRepository.Update(task, bookID)
   if err != nil {
     c.JSON(500, gin.H{
       "message": err,
@@ -186,7 +186,7 @@ func BookLaterDeleteHandler(c *gin.Context) {
   task.UpdatedBy = user.ID
   log.Println("Send the task to trash", task)
 
-  task, err = taskRepository.Update(task)
+  task, err = taskRepository.Update(task, bookID)
   if err != nil {
     c.JSON(500, gin.H{
       "message": err,
@@ -233,7 +233,7 @@ func BookLaterRestoreHandler(c *gin.Context) {
   task.UpdatedBy = user.ID
   log.Println("Restore the task from trash", task)
 
-  task, err = taskRepository.Update(task)
+  task, err = taskRepository.Update(task, bookID)
   if err != nil {
     c.JSON(500, gin.H{
       "message": err,
@@ -318,7 +318,7 @@ func BookLaterDoTodayHandler(c *gin.Context) {
 
   // update the task
   task.CurrentDate = dayAsInt
-  task, err = taskRepository.Update(task)
+  task, err = taskRepository.Update(task, bookID)
   if err != nil {
     c.JSON(500, gin.H{
       "message": err,

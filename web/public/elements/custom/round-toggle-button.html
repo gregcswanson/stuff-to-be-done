@@ -1,0 +1,39 @@
+<!--
+    
+-->
+<dom-module id="round-toggle-button">
+  <template>
+    <style include="app-theme">
+        :host {
+            display: block;
+        }
+
+    </style>
+    
+  </template>
+  <script>
+    Polymer({
+      is: 'round-toggle-button',
+      properties: {
+        isSelected: {
+            type: Boolean,
+            value: false,
+            observer: '_isSelectedChanged',
+        },
+        iconSelected: {
+          type: String,
+          value: ''
+        },
+        iconNotSelected: {
+          type: String,
+          value: ''
+        }
+
+      },
+      _isSelectedChanged: function(newValue){
+          console.log('round-toggle-button-element._isSelectedChanged', newValue);
+      },
+      
+    });
+  </script>
+</dom-module>

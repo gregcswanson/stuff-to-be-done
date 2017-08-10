@@ -69,7 +69,8 @@
     <add-element book-id="[[bookId]]" hidden$="{{isLoading}}" on-add-selected-element="_addElement"></add-element>
     
     <!-- api -->
-    <app-api id="appApi" book-id="[[bookId]]" on-later-items-loaded="_laterItemsLoaded" on-later-element-created="_laterItemCreated"></app-api>
+    <app-api id="appApi" book-id="[[bookId]]" on-later-items-loaded="_laterItemsLoaded" 
+    on-later-element-created="_laterItemCreated"></app-api>
 
   </template>
   <script>
@@ -123,20 +124,26 @@
       },
       _addElement: function (ev) {
         var item = ev.detail.item;
-        console.log('_addElement', item);
         // ajax request to create default object
-        var dayAsString = this._dateToInt(new Date()).toString();
+        var dayAsInt = this._dateToInt(new Date());
+        var day = this.days.find(function (f) { return f.DateAsInt == dayAsInt });
+        if (!day) {
+          this.splice('days', 0, 0, { DateAsInt: dayAsInt, Display: dayAsInt.toString(), DayTasks: []});
+        }
         // call the API to do this
-        this.$.appApi.createElementForLater(item.ElementName, dayAsString);
-        //this.$.laterPost.body = { elementName: item.ElementName, dayAsString: dayAsString };
-        //this.$.laterPost.generateRequest();
+        this.$.appApi.createElementForLater(item.ElementName, dayAsInt.toString());
       },
       _laterItemCreated: function (data) {
-        this.$.appApi.getLaterItems();
-        //this.push('items', data.detail.response.data);
-        // fire after updated
-        //this.justAdded = { taskId: data.detail.response.data.TaskID, text: '' };
-        //setTimeout(this._onCreatedTimeout.bind(this), 100);
+        var task = data.detail.item;
+        var day = this.days.find(function (f) { return f.DateAsInt == task.DateAsInt });
+        //if (!day) {
+          // Always adding to the current day (now)
+          //this.splice('days', 0, 0, { DateAsInt: task.DateAsInt, Display: task.DateAsInt.toString(), DayTasks: []});
+        //}
+        var index = this.days.indexOf(day);
+        if (day) {
+          this.push('days.' + index.toString() + '.DayTasks', data.detail.item);
+        }
       },
       _onCreatedTimeout: function () {
         // send the set inital focus request

@@ -179,7 +179,7 @@ func (r *TaskUseCases) DoLater(bookID string, taskID string, dayID string, data 
   	task.Updated = time.Now()
   	task.UpdatedBy = r.User.ID
 
-  	task, err = r.TaskRepository.Update(task)
+  	task, err = r.TaskRepository.Update(task, bookID)
 		if err != nil {
 			return result, err
 		}
@@ -208,7 +208,7 @@ func (r *TaskUseCases) DoLater(bookID string, taskID string, dayID string, data 
 	task.Updated = time.Now()
 	task.UpdatedBy = r.User.ID
 	
-	task, err = r.TaskRepository.Update(task)
+	task, err = r.TaskRepository.Update(task, bookID)
 	if err != nil {
 		return result, err
 	} 
@@ -278,7 +278,7 @@ func (r *TaskUseCases) DoOnDate(bookID string, taskId string, dateAsString strin
 
   // update the task
   task.CurrentDate = convertedDate.DateAsInt
-  task, err = r.TaskRepository.Update(task)
+  task, err = r.TaskRepository.Update(task, bookID)
   return task, day, err
 }
 
@@ -300,7 +300,7 @@ func (r *TaskUseCases) EmptyTrash(bookID string) (error) {
 				r.DayRepository.Delete(days[j].ID)
 			}
 			// delete the task
-			r.TaskRepository.Delete(tasks[i].ID)
+			r.TaskRepository.Delete(tasks[i].ID, bookID)
 			log.Println("task deleted " + tasks[i].ID)
 
 		} 

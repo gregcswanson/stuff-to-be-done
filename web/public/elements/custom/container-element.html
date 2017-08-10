@@ -317,11 +317,14 @@
         this.showActions = false;
         //console.log('data changed', newValue);
         if (this.$.el) {
-          var data = JSON.parse(this.elementData);
-          //console.log('container-element data changed', data);
-          if (this.$.el.elementData !== data) {
-            this.$.el.elementData = data;
+          if (this.elementData.length > 0){
+            var data = JSON.parse(this.elementData);
+            //console.log('container-element data changed', data);
+            if (this.$.el.elementData !== data) {
+              this.$.el.elementData = data;
+            }
           }
+          
         }
       },
       attached: function () {

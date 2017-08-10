@@ -22,13 +22,11 @@
                 bottom: 0;
                 left: 0;
                 width: 40px;
-                background: repeating-linear-gradient(
-                135deg,
+                background: repeating-linear-gradient( 135deg,
                 #fff,
                 #fff 10px,
                 #F57C00 10px,
-                #F57C00 20px
-                );
+                #F57C00 20px);
             }
 
             div.to-do-container>paper-button {
@@ -60,7 +58,7 @@
                 overflow-wrap: break-word;
             }
 
-            div.to-do-container.actioned>p{
+            div.to-do-container.actioned>p {
                 margin: 0;
             }
 
@@ -68,7 +66,8 @@
                 display: block;
                 margin: 0 0 0 40px;
             }
-            div.to-do-container>p.title{
+
+            div.to-do-container>p.title {
                 font-weight: bold;
                 font-style: normal;
                 padding: 4px 0 2px 10px;
@@ -82,12 +81,13 @@
                 padding-top: 10px;
             }
 
-            div.to-do-container>p.subtitle{
+            div.to-do-container>p.subtitle {
                 font-style: italic;
                 padding: 2px 0 2px 10px;
                 font-size: 11px;
             }
-            div.to-do-container>p.notes{
+
+            div.to-do-container>p.notes {
                 padding: 2px 0 4px 10px;
                 font-size: 13px;
                 min-height: 18px;
@@ -167,8 +167,8 @@
                 text-align: right;
                 margin-bottom: 2px;
             }
-</style>
-<div class="stripes"></div>
+        </style>
+        <div class="stripes"></div>
         <div hidden$="{{!isActioned}}">
             <div class="to-do-container actioned">
                 <p class="title">[Postponed] {{elementData.title}}</p>
@@ -192,17 +192,11 @@
                 <!-- <paper-button on-tap="_lock">
                     <iron-icon icon="create"></iron-icon>
                 </paper-button> -->
-                <paper-textarea id="meetingTitle" type="text" 
-                    placeholder="Meeting title..." 
-                    value="{{elementData.title::input}}"
-                    on-change="_textChanged" on-blur="_blur" no-label-float></paper-textarea>
-                <paper-textarea id="meetingAttendees" type="text" 
-                    placeholder="Attendees..." 
-                    value="{{elementData.subTitle::input}}"
-                    on-change="_textChanged" on-blur="_blur" no-label-float></paper-textarea>
-                <paper-textarea id="notetext" type="text" 
-                    placeholder="Type a meeting, toggle the pencil to lock it..." 
-                    value="{{elementData.text::input}}"
+                <paper-textarea id="meetingTitle" type="text" placeholder="Meeting title..." value="{{elementData.title::input}}" on-change="_textChanged"
+                    on-blur="_blur" no-label-float></paper-textarea>
+                <paper-textarea id="meetingAttendees" type="text" placeholder="Attendees..." value="{{elementData.subTitle::input}}" on-change="_textChanged"
+                    on-blur="_blur" no-label-float></paper-textarea>
+                <paper-textarea id="notetext" type="text" placeholder="Type a meeting, toggle the pencil to lock it..." value="{{elementData.text::input}}"
                     on-change="_textChanged" on-blur="_blur" no-label-float></paper-textarea>
                 <div class="meeting-actions">
                     <paper-button class="meetingStatus close" on-tap="_lock">
@@ -221,6 +215,7 @@
                     value: function () {
                         return { text: '', title: '', subTitle: '', status: 'OPEN' }
                     },
+                    observer: 'elementDataChanged',
                 },
                 isCompleted: {
                     type: Boolean,
@@ -239,13 +234,18 @@
                 // text is popupated for new records when triggered from another element
                 this.$.notetext.scrollIntoView();
                 if (text && text.length > 0) {
-                    this.$.notetext.focus();
+                    console.log('meeting: set initial focus with text');
+                    this.$.meetingTitle.focus();
                     this.isDirty = true;
                     this.$.notetext.value = text;
                     this.elementData.text = text;
                 } else {
-                    this.$.notetext.focus();
+                    this.$.meetingTitle.focus();
+                    console.log('meeting: set initial focus without text');
                 }
+            },
+            elementDataChanged: function(newValue){
+                console.log('meeting element data changed', newValue);
             },
             _blur: function () {
                 if (this.isDirty) {

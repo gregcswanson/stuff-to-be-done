@@ -1,0 +1,46 @@
+<!--
+    - need to work out how to have container elements
+    - can I find the highest z order on a page?
+    - create a toggle button using a small fab button for toggling this
+      and the parent is in control of the button
+    - how to programatically add and remove classes, maybe just a function
+-->
+<dom-module id="zoom-view">
+  <template>
+    <style include="app-theme">
+        :host {
+            display: block;
+        }
+
+        .normal {
+          display: block;
+        }
+
+        .zoomed {
+          display: block;
+        }
+
+    </style>
+    
+  </template>
+  <script>
+    Polymer({
+      is: 'zoom-view',
+      properties: {
+        bookId: {
+          type: String,
+          value: '',
+        },
+        isZoomed: {
+            type: Boolean,
+            value: false,
+            observer: '_isZoomedChanged',
+        }
+      },
+      _isZoomedChanged: function(newValue){
+          console.log('zoom-element._isZoomedChanged', newValue);
+      },
+      
+    });
+  </script>
+</dom-module>
