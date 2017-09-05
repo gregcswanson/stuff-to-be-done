@@ -6,6 +6,22 @@
     </style>
 
     <!-- ajax calls -->
+    <iron-ajax 
+        id="ajaxCreateDayItem" 
+        x-content-type="application/json" 
+        content-type="application/x-www-form-urlencoded" 
+        method="POST"
+      url="/api/v1/book/[[bookId]]/day/[[dayAsString]]" 
+      handle-as="json" 
+      on-response="_ajaxCreateDayItemPostResponse"
+      on-error="_a"></iron-ajax>
+    
+    <iron-ajax
+        id="ajaxGetDayItems"
+        url="/api/v1/book/[[bookId]]/day/[[dayAsString]]" 
+        handle-as="json" 
+        on-response="_ajaxGetDayItemsResponse">
+    </iron-ajax>
     <iron-ajax
         id="ajaxGetCompletedItems"
         url="/api/v1/book/[[bookId]]/completed"
@@ -28,8 +44,7 @@
         id="ajaxGetLaterCount"
         url="/api/v1/book/[[bookId]]/latercount"
         handle-as="json"
-        on-response="_ajaxGetLaterCountResponse">
-    </iron-ajax>
+        on-response="_ajaxGetLaterCountResponse"></iron-ajax>
     <iron-ajax
         id="ajaxPutDoTaskLater"
         x-content-type="application/json"
@@ -37,8 +52,7 @@
         method="PUT"
         url="/api/v1/book/[[bookId]]/dolater/[[currentTaskId]]"
         handle-as="json"
-        on-response="_ajaxPutDoTaskLaterResponse">
-    </iron-ajax>
+        on-response="_ajaxPutDoTaskLaterResponse"></iron-ajax>
     <iron-ajax
         id="ajaxDoToday"
         x-content-type="application/json"
@@ -105,6 +119,12 @@
         createElementForLater: function(elementName, dayAsString){
             this.$.ajaxLaterPost.body = { elementName: elementName, dayAsString: dayAsString };
             this.$.ajaxLaterPost.generateRequest();
+        },
+        getDayTasks: function() {
+            this.$.ajaxGetDayItems.generateRequest();
+        },
+        _ajaxGetDayItemsResponse: function (data) {
+            this.fire('day-tasks-loaded', { items: event.detail.response.data }, { bubbles: true });
         },
         _laterPostResponse: function(data) {
             this.fire('later-element-created', { item: event.detail.response.data }, { bubbles: true });

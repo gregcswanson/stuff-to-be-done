@@ -69,8 +69,9 @@
       </paper-button>
     </template>
     <!-- ajax calls -->
-    <iron-ajax id="ajaxGetDayItems" url="/api/v1/book/[[bookId]]/day/[[dayAsString]]" handle-as="json" on-response="_ajaxGetDayItemsResponse"></iron-ajax>
-
+    <!--
+      <iron-ajax id="ajaxGetDayItems" url="/api/v1/book/[[bookId]]/day/[[dayAsString]]" handle-as="json" on-response="_ajaxGetDayItemsResponse"></iron-ajax>
+      -->
     <iron-ajax id="ajaxCreateDayItem" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="POST"
       url="/api/v1/book/[[bookId]]/day/[[dayAsString]]" handle-as="json" on-response="_ajaxCreateDayItemPostResponse"></iron-ajax>
     <iron-ajax id="ajaxUpdateDayItem" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="PUT"
@@ -80,8 +81,13 @@
     <iron-ajax id="laterRestore" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="PUT"
       url="/api/v1/book/[[bookId]]/later/[[currentTaskId]]/restore" handle-as="json" on-response="_laterRestoreResponse"></iron-ajax>
 
-    <app-api id="appApi" book-id="[[bookId]]" on-task-deleted="_taskDeleted" 
-      on-task-do-today-completed="_taskDoTodayCompleted"></app-api>
+    <app-api id="appApi" 
+      book-id="[[bookId]]" 
+      day-as-string="[[dayAsString]]"
+      on-day-tasks-loaded="_tasksLoaded"
+      on-task-deleted="_taskDeleted" 
+      on-task-do-today-completed="_taskDoTodayCompleted">
+    </app-api>
 
   </template>
   <script>
@@ -136,7 +142,8 @@
         if (newValue !== '') {
           this.items = [];
           this.isLoading = true;
-          this.$.ajaxGetDayItems.generateRequest();
+          this.$.appApi.getDayTasks();
+          //this.$.ajaxGetDayItems.generateRequest();
         }
         // get todayAsString
         this.todayAsString = this._dateToInt(new Date()).toString();
@@ -144,10 +151,16 @@
       },
       reloadItems: function () {
         this.isLoading = true;
-        this.$.ajaxGetDayItems.generateRequest();
+        this.$.appApi.getDayTasks();
+        //this.$.ajaxGetDayItems.generateRequest();
       },
       itemsAddedOrRemoved: function (changeRecord) {
         this.isEmpty = this.items.length == 0;
+      },
+      _tasksLoaded: function(ev) {
+        console.log('_tasksLoaded', ev);
+        this.items = ev.detail.items;
+        this.isLoading = false;
       },
       _addElement: function (ev) {
         var item = ev.detail.item;
@@ -170,10 +183,10 @@
         this.$.laterRestore.body = { ID: this.undoDeleteTaskId };
         this.$.laterRestore.generateRequest();
       },
-      _ajaxGetDayItemsResponse: function (data) {
-        this.items = data.detail.response.data;
-        this.isLoading = false;
-      },
+      //_ajaxGetDayItemsResponse: function (data) {
+      //  this.items = data.detail.response.data;
+      //  this.isLoading = false;
+      //},
       _onCreatedTimeout: function () {
         // send the set inital focus request
         this.fire('set-initial-focus', this.justAdded);

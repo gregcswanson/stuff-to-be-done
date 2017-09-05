@@ -7,6 +7,12 @@ handlers:
   
 - url: /js
   static_dir: public/js
+
+- url: /.well-known/acme-challenge/(.+)
+  static_files: public/ssl/acme-challenge/\1
+  mime_type: text/plain
+  upload: public/ssl/acme-challenge/.*
+  application_readable: true
   
 - url: /bower_components
   static_dir: bower_components
