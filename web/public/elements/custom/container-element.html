@@ -14,6 +14,10 @@
         min-height: 40px;
       }
 
+      :host([is-saving]) {
+        background-color: #FFE0B2;
+      }
+
       .actioned {
         margin-left: 40px;
       }
@@ -91,11 +95,7 @@
 
     <!-- comments -->
     <task-comment book-id="[[bookId]]" task-id="[[taskId]]" day-id="[[dayId]]" comment="{{commentText}}" hidden$="{{!showComment}}"></task-comment>
-    <!-- <paper-textarea id="commentext" hidden$="{{!showComment}}" placeholder="Add a comment for this day..."
-     value="{{commentText}}"
-      on-change="_commentChanged" no-label-float>
-    </paper-textarea> -->
-
+   
     <!-- actions -->
     <iron-overlay-backdrop id="backdrop" on-tap="_toggleActions"></iron-overlay-backdrop>
     <paper-material class="tools" elevation="2" hidden$="{{!showActions}}">
@@ -142,6 +142,11 @@
           type: String,
           value: '',
           observer: '_dayIdChanged',
+        },
+        isSaving: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
         },
         isCompleted: {
           type: Boolean,

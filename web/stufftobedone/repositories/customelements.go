@@ -135,9 +135,10 @@ func (r *CustomElementRepository) FindBookElements(bookID string) ([]domain.Book
     noteElement := domain.BookElement{ Name: "Note", ElementName: "element-note", Icon: "speaker-notes" }
     meetingElement := domain.BookElement{ Name: "Meeting", ElementName: "element-meeting", Icon: "social:people" }
     sketchElement := domain.BookElement{ Name: "Sketch", ElementName: "element-sketch", Icon: "gesture" }
+    speakerElement := domain.BookElement{ Name: "Speaker note", ElementName: "element-speaker", Icon: "communication:forum" }
     //testElement := domain.BookElement{ Name: "Test", ElementName: "element-test", Icon: "bug-report" }
     
-    bookElements := []domain.BookElement{ toDoElement, noteElement, meetingElement, sketchElement } //, testElement}
+    bookElements := []domain.BookElement{ toDoElement, noteElement, meetingElement, sketchElement, speakerElement } //, testElement}
     
     
     return bookElements, nil

@@ -1,5 +1,5 @@
 <!-- <link rel="import" href="/elements/custom/app-theme.html"> -->
-<dom-module id="element-meeting">
+<dom-module id="element-speaker">
     <template>
         <style include="app-theme">
              :host {
@@ -192,15 +192,19 @@
                 <!-- <paper-button on-tap="_lock">
                     <iron-icon icon="create"></iron-icon>
                 </paper-button> -->
-                <paper-textarea id="meetingTitle" type="text" placeholder="Meeting title..." value="{{elementData.title::input}}" on-change="_textChanged"
+                <paper-textarea id="meetingTitle" type="text" placeholder="Presentation title..." value="{{elementData.title::input}}" on-change="_textChanged"
                     on-blur="_blur" no-label-float></paper-textarea>
-                <paper-textarea id="meetingAttendees" type="text" placeholder="Attendees..." value="{{elementData.subTitle::input}}" on-change="_textChanged"
+                <paper-textarea id="meetingAttendees" type="text" placeholder="Speaker..." value="{{elementData.subTitle::input}}" on-change="_textChanged"
                     on-blur="_blur" no-label-float></paper-textarea>
-                <paper-textarea id="notetext" type="text" placeholder="Type a meeting, toggle the pencil to lock it..." value="{{elementData.text::input}}"
+                <paper-textarea id="notetext" type="text" placeholder="Details..." value="{{elementData.text::input}}"
                     on-change="_textChanged" on-blur="_blur" no-label-float></paper-textarea>
-                <div class="meeting-actions">
+                <!-- 
+                    Notes
+                -->
+                
+                    <div class="meeting-actions">
                     <paper-button class="meetingStatus close" on-tap="_lock">
-                        <span>Close meeting</span>
+                        <span>Finished</span>
                     </paper-button>
                 </div>
             </div>
@@ -208,7 +212,7 @@
     </template>
     <script>
         Polymer({
-            is: 'element-meeting',
+            is: 'element-speaker',
             properties: {
                 elementData: {
                     type: Object,

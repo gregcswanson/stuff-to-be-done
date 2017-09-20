@@ -1,0 +1,70 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<dom-module id="json-string-converter">
+  <template>
+    <style>
+        
+    </style>
+    <!-- <p>[[string]]</p>
+    <p>[[data]]</p> -->
+  </template>
+  <script>
+    Polymer({
+        is: 'json-string-converter',
+        properties: {
+            dataString: {
+                type: String,
+                value: '{}',
+                notify: true,
+                observer: '_onDataString'
+            },
+            dataJson: {
+                type: Object,
+                value: function () {
+                    return {   };
+                },
+                notify: true,
+                observer: '_onDataJson'
+            },
+        },
+        observers:[
+            '_dataJsonChanged(dataJson.*)'
+        ],
+        ready: function () {
+            if (this.dataString && this.dataString.length > 0) {
+                this._setJsonFromString(this.dataString);
+            }
+        },
+        _onDataString: function(newValue) {
+            if (this.dataString && this.dataString.length > 0) {
+                   this._setJsonFromString(newValue);
+            }
+        },
+        _setJsonFromString: function(value){
+            var data = JSON.parse(value);
+            this.set('dataJson', data);
+        },
+        _dataJsonChanged: function(newValue){
+            if (typeof(newValue.base) === 'undefined') return;
+            var data = JSON.stringify(newValue.base);
+            if (data !== this.dataString)
+            {
+                this.dataString = data;
+            }
+        },
+        _onDataJson: function(newValue) { 
+            if (typeof(newValue) === 'undefined') {
+                if (this.dataString && this.dataString.length > 0) {
+                    this._setJsonFromString(this.dataString);
+                }
+                return;
+            }
+            // convert to dataString
+            var data = JSON.stringify(newValue);
+            if (data !== this.dataString)
+            {
+                this.dataString = data;
+            }
+        },
+    });
+  </script>
+</dom-module>

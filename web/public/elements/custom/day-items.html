@@ -45,9 +45,19 @@
       <!-- items -->
       <paper-material elevation="1" hidden$="{{isEmpty}}">
         <template is="dom-repeat" items="{{items}}">
+          <!--<hr />
+          <json-string-converter data-string="{{item.Data}}" data-json="{{item.jsonData}}"></json-string-converter>
+          <p>{{item.Data}}</p>
+          <paper-textarea type="text" placeholder="String" value="{{item.Data::input}}" on-change="_textChanged"
+          on-blur="_blur" no-label-float></paper-textarea>
+          <p>{{item.jsonData.text}}</p>
+          <paper-textarea type="text" placeholder="Json" value="{{item.jsonData.text::input}}" on-change="_textChanged"
+              on-blur="_blur" no-label-float></paper-textarea>
+          <hr /> -->
           <container-element id="[[item.DayID]]" child-name="[[item.ElementName]]" task-id="[[item.TaskID]]" day-id="[[item.DayID]]"
             book-id="[[bookId]]" comment-text="[[item.Comment]]" is-completed="[[item.IsCompleted]]"
             is-actioned="[[item.IsActioned]]"
+            is-saving="[[item.IsSaving]]"
              show-later show-today=[[canShowToday]]
             can-reopen=[[item.CanReopen]] is-completed-view={{item.IsCompleted}} element-data="[[item.Data]]" on-element-updated="_elementUpdated"
             on-element-delete="_elementDelete" on-element-do-later="_elementDoLater" on-element-do-today="_elementDoToday">
@@ -174,6 +184,7 @@
         // find the dayId from the current list
         var item = this.items.find(function (f) { return f.TaskID == data.taskId });
         if (item != null) {
+          item.IsSaving = true;
           this.$.ajaxDoLaterDayItem.body = { DayID: item.DayID, TaskID: data.taskId, Data: data.elementData, IsCompleted: data.isCompleted };
           this.$.ajaxDoLaterDayItem.generateRequest();
         }
@@ -206,6 +217,7 @@
         //console.log('refresh item', item);
         if (item) {
           var index = this.items.indexOf(item);
+          this.set("items." + index + ".IsSaving", false);
           // only refresh the element if its state changes in some way from the 
           // server, this is janky to say the least. probably a better way to do this
           if (this.items[index].elementData !== result.elementData 
@@ -221,6 +233,7 @@
         var item = this.items.find(function (f) { return f.TaskID == result.TaskID });
         if (item) {
           var index = this.items.indexOf(item);
+          this.set("items." + index + ".IsSaving", false);
           console.log('update item as later', result);
           //this.splice('items', index, 1); // Dont delete it, just update it
           this.splice('items', index, 1, result);
@@ -251,6 +264,7 @@
         // find the dayId from the current list
         var item = this.items.find(function (f) { return f.TaskID == data.taskId });
         if (item != null) {
+          this.set("items." + this.items.indexOf(item) + ".IsSaving", true);
           this.$.ajaxUpdateDayItem.body = { DayID: item.DayID, TaskID: data.taskId, Data: data.elementData, IsCompleted: data.isCompleted };
           this.$.ajaxUpdateDayItem.generateRequest();
         }
