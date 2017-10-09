@@ -1,0 +1,49 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<dom-module id="failed-retry-button">
+  <template>
+    <style>
+       :host {
+        display: block;
+        text-align: center;
+      }
+      
+      paper-button {
+        background-color: #aaa;
+        color: white !important;
+        text-transform: none;
+      }
+
+      paper-button small {
+          font-size: 10px;
+      }
+      
+    </style>
+
+
+    
+
+    <div hidden$="{{!isError}}">
+      <paper-button on-tap="_retry">
+          <span>Loading failed!<br/><small>Tap to retry</small></span>
+      </paper-button>
+    </div>
+    
+  </template>
+  <script>
+    Polymer({
+      is: 'failed-retry-button',
+      properties: {
+        isError: {
+          type: Boolean,
+          value: false
+        },
+      },
+      
+      _retry: function(event) {
+        console.log('failed-retry-button', 'clicked')
+        this.fire('retry', {});
+      },
+      
+    });
+  </script>
+</dom-module>

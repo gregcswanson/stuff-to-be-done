@@ -20,7 +20,8 @@
         id="ajaxGetDayItems"
         url="/api/v1/book/[[bookId]]/day/[[dayAsString]]" 
         handle-as="json" 
-        on-response="_ajaxGetDayItemsResponse">
+        on-response="_ajaxGetDayItemsResponse"
+        on-error="_ajaxGetDayItemsError">
     </iron-ajax>
     <iron-ajax
         id="ajaxGetCompletedItems"
@@ -32,13 +33,15 @@
         id="ajaxGetLaterItems"
         url="/api/v1/book/[[bookId]]/later"
         handle-as="json"
-        on-response="_ajaxGetLaterItemsResponse">
+        on-response="_ajaxGetLaterItemsResponse"
+        on-error="_ajaxGetLaterItemsError">
     </iron-ajax>
     <iron-ajax
         id="ajaxGetTrash"
         url="/api/v1/book/[[bookId]]/trash"
         handle-as="json"
-        on-response="_ajaxGetTrashResponse">
+        on-response="_ajaxGetTrashResponse"
+        on-error="_ajaxGetTrashError">
     </iron-ajax>
     <iron-ajax
         id="ajaxGetLaterCount"
@@ -89,6 +92,12 @@
         content-type="application/x-www-form-urlencoded" 
         method="POST"
         url="/api/v1/book/[[bookId]]/later" handle-as="json" on-response="_laterPostResponse"></iron-ajax>
+    <iron-ajax id="ajaxGetOpenDays" 
+        url="/api/v1/book/[[bookId]]/previous/[[dayAsString]]" 
+        handle-as="json" 
+        on-response="_ajaxGetOpenDaysResponse"
+        on-error="_ajaxGetOpenDaysError"></iron-ajax>
+        
   </template>
   <script>
     Polymer({
@@ -126,6 +135,9 @@
         _ajaxGetDayItemsResponse: function (data) {
             this.fire('day-tasks-loaded', { items: event.detail.response.data }, { bubbles: true });
         },
+        _ajaxGetDayItemsError: function(data) {
+            this.fire('day-tasks-loaded-error', error, { bubbles: true });
+        },
         _laterPostResponse: function(data) {
             this.fire('later-element-created', { item: event.detail.response.data }, { bubbles: true });
         },
@@ -143,12 +155,28 @@
             var items = data.detail.response.data;
             this.fire('later-items-loaded', { items: items }, { bubbles: true });
         },
+        _ajaxGetLaterItemsError: function(data){
+            this.fire('later-items-error', {  }, { bubbles: true });
+        },
+        getPreviousTasks: function(data) {
+            this.$.ajaxGetOpenDays.generateRequest();
+        },
+        _ajaxGetOpenDaysResponse: function(data) {
+            this.fire('previous-tasks-loaded', { items: event.detail.response.data }, { bubbles: true });
+        },
+        _ajaxGetOpenDaysError: function(data) {
+            this.fire('previous-tasks-loaded-error', error, { bubbles: true });
+        },
         getTrash: function(){
             this.$.ajaxGetTrash.generateRequest();
         },
         _ajaxGetTrashResponse: function(data) {
             var items = data.detail.response.data;
             this.fire('trash-loaded', { items: items }, { bubbles: true });
+        },
+        _ajaxGetTrashError: function(error){
+            console.log('_ajaxGetTrashError', error);
+            this.fire('trash-loaded-error', error, { bubbles: true });
         },
         emptyTrash: function(){
             this.$.ajaxEmptyTrash.generateRequest();

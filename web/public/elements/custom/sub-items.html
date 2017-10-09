@@ -1,0 +1,33 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="app-theme.html">
+<dom-module id="sub-items">
+    <template include="app-theme">
+        <style>
+             :host {
+                display: block;
+                position: relative;
+            }
+
+        </style>
+        <div>
+            <!--
+                 a list of sub tasks for this task 
+                 auto add a new list if required
+            -->
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'sub-items',
+            properties: {
+                bookId: {
+                    type: Object,
+                    value: function() {
+                        return [];
+                    },
+                    notify: true,
+                },
+            },
+        });
+    </script>
+</dom-module>

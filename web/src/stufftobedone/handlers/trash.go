@@ -23,6 +23,9 @@ func ApiTrashGetHandler(c *gin.Context) {
   bookID := c.Param("bookId")
 
   groupedDayTasks, err := taskUseCases.FindTrashGroupedByDay(bookID)
+  // DEVELOPER CODE - TESTING ERRORS
+  //JsonErrorMessage(c, "testing error")
+  // ~ DEVELOPER CODE
   if err != nil {
     JsonError(c, err)
   } else {

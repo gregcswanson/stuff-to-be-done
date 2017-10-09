@@ -28,6 +28,14 @@
                 #F57C00 10px,
                 #F57C00 20px);
             }
+            div.spacer {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                width: 40px;
+                background: transparent;
+            }
 
             div.to-do-container>paper-button {
                 position: absolute;
@@ -70,7 +78,7 @@
             div.to-do-container>p.title {
                 font-weight: bold;
                 font-style: normal;
-                padding: 4px 0 2px 10px;
+                padding: 10px 0 2px 10px;
                 font-size: 15px;
                 min-height: 18px;
             }
@@ -93,11 +101,23 @@
                 min-height: 18px;
             }
 
-            paper-button {
+            /*paper-button.toggleStatus.open {
                 min-width: 1em;
                 background: var(--dark-primary-color, gray);
                 border-radius: 3px;
                 color: white;
+            }*/
+
+            paper-button.toggleStatus.open {
+                min-width: 1em;
+                background: transparent;
+                color: var(--dark-primary-color, gray);
+            }
+
+            paper-button.toggleStatus.closed {
+                min-width: 1em;
+                background: transparent;
+                color: var(--secodnary-text-color, gray);
             }
 
             paper-button.meetingStatus.close {
@@ -166,9 +186,10 @@
             div.meeting-actions {
                 text-align: right;
                 margin-bottom: 2px;
+                display: none;
             }
         </style>
-        <div class="stripes"></div>
+        <div class="spacer"></div>
         <div hidden$="{{!isActioned}}">
             <div class="to-do-container actioned">
                 <p class="title">[Postponed] {{elementData.title}}</p>
@@ -176,9 +197,9 @@
         </div>
         <div hidden$="{{isActioned}}">
             <div class="to-do-container" hidden$="{{!isCompletedView}}">
-                <!--<paper-button on-tap="_unlock">
+                <paper-button on-tap="_unlock" class="toggleStatus closed">
                     <iron-icon icon="social:people"></iron-icon>
-                </paper-button>-->
+                </paper-button>
                 <p class="title">{{elementData.title}}</p>
                 <p class="subtitle">{{elementData.subTitle}}</p>
                 <p class="notes">{{elementData.text}}</p>
@@ -189,18 +210,18 @@
                 </div>
             </div>
             <div class="to-do-container" hidden$="{{isCompletedView}}">
-                <!-- <paper-button on-tap="_lock">
-                    <iron-icon icon="create"></iron-icon>
-                </paper-button> -->
+                    <paper-button on-tap="_lock" class="toggleStatus open">
+                            <iron-icon icon="social:people-outline"></iron-icon>
+                        </paper-button>
                 <paper-textarea id="meetingTitle" type="text" placeholder="Meeting title..." value="{{elementData.title::input}}" on-change="_textChanged"
                     on-blur="_blur" no-label-float></paper-textarea>
                 <paper-textarea id="meetingAttendees" type="text" placeholder="Attendees..." value="{{elementData.subTitle::input}}" on-change="_textChanged"
                     on-blur="_blur" no-label-float></paper-textarea>
-                <paper-textarea id="notetext" type="text" placeholder="Type a meeting, toggle the pencil to lock it..." value="{{elementData.text::input}}"
+                <paper-textarea id="notetext" type="text" placeholder="Summary, tap the icon to finish..." value="{{elementData.text::input}}"
                     on-change="_textChanged" on-blur="_blur" no-label-float></paper-textarea>
                 <div class="meeting-actions">
                     <paper-button class="meetingStatus close" on-tap="_lock">
-                        <span>Close meeting</span>
+                        <span>Meeting finished</span>
                     </paper-button>
                 </div>
             </div>

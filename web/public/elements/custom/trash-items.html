@@ -49,62 +49,43 @@
       }
     </style>
 
-    <!-- items -->
-    <div hidden$="{{isLoading}}" class="tools">
-      <paper-button on-tap="_emptyTrash" >Empty trash</paper-button>
+    <failed-retry-button is-error="{{isError}}" on-retry="_loadTrash"></failed-retry-button>
+    
+
+    <div hidden$="{{isError}}">
+      <!-- items -->
+      <div hidden$="{{isLoading}}" class="tools">
+        <paper-button on-tap="_emptyTrash" >Empty trash</paper-button>
+      </div>
+      <!-- loading -->
+      <loading-indicator is-loading="{{isLoading}}" message="trash"></loading-indicator>
+      <div hidden$="{{isLoading}}">
+          <div hidden$="{{isEmpty}}">
+            <template is="dom-repeat" items="{{days}}">
+              <moment-js date="[[item.Display]]" date-format="YYYYMMDD" format="dddd Do MMMM, YYYY"></moment-js>
+              <paper-material elevation="1" hidden$="{{isEmpty}}">
+                <task-items book-id="[[bookId]]" 
+                dayAsString="[[item.Display]]" 
+                show-today
+                is-completed-view
+                on-item-removed="_taskItemsItemRemoved" items="[[item.DayTasks]]"></task-items>
+              </paper-material>
+            </template>
+          </div>
+          <paper-material class="no-items" elevation="1" hidden$="{{!isEmpty}}">
+            <p>
+              No items<br /><br /> You can delete tasks from and restore them from here.
+            </p>
+          </paper-material>
+        </div>
     </div>
-    <!-- loading -->
-    <p class="loading" hidden$="{{!isLoading}}">Loading...</p>
-
-    <div hidden$="{{isEmpty}}">
-      <template is="dom-repeat" items="{{days}}">
-        <moment-js date="[[item.Display]]" date-format="YYYYMMDD" format="dddd Do MMMM, YYYY"></moment-js>
-        <paper-material elevation="1" hidden$="{{isEmpty}}">
-          <task-items book-id="[[bookId]]" 
-          dayAsString="[[item.Display]]" 
-          show-today
-          is-completed-view
-          on-item-removed="_taskItemsItemRemoved" items="[[item.DayTasks]]"></task-items>
-        </paper-material>
-      </template>
-
-    </div>
-
-    <div hidden$="{{isLoading}}">
-      <paper-material class="no-items" elevation="1" hidden$="{{!isEmpty}}">
-        <p>
-          No items<br /><br /> You can delete tasks from and restore them from here.
-        </p>
-      </paper-material>
-    </div>
-
-
-    <!-- <paper-material elevation="1" hidden$="{{isEmpty}}">
-      <template is="dom-repeat" items="{{items}}">
-        <container-element child-name="[[item.ElementName]]" 
-        task-id="[[item.ID]]" 
-        is-completed="[[item.IsCompleted]]" 
-        show-today
-          is-completed-view=true 
-          element-data="[[item.Data]]" 
-          on-element-do-today="_elementDoToday">
-        </container-element>
-      </template>
-    </paper-material>
-
-    <div hidden$="{{isLoading}}">
-      <paper-material class="no-items" elevation="1" hidden$="{{!isEmpty}}">
-        <p>No items</p>
-      </paper-material>
-    </div>
-
-    <p class="loading" hidden$="{{!isLoading}}">Loading...</p> -->
 
     <!-- ajax calls -->
     <app-api id="appApi" book-id="[[bookId]]" 
       on-trash-loaded="_trashLoaded"
       on-trash-emptied="_tashEmptied"
-     on-task-do-today-completed="_taskDoTodayCompleted"></app-api>
+      on-trash-loaded-error="_trashLoadedError"
+      on-task-do-today-completed="_taskDoTodayCompleted"></app-api>
 
   </template>
   <script>
@@ -123,6 +104,10 @@
           type: Boolean,
           value: true,
         },
+        isError: {
+          type: Boolean,
+          value: false,
+        },
         days: {
           type: Array,
           value: function () {
@@ -131,9 +116,7 @@
           notify: true
         },
       },
-      /*observers: [
-        'itemsAddedOrRemoved(items.splices)'
-      ],*/
+      
       ready: function () {
         this.isLoading = true;
         this.$.appApi.getTrash();
@@ -142,6 +125,15 @@
         this.days = event.detail.items;
         this.isEmpty = this.days.length == 0;
         this.isLoading = false;
+      },
+      _trashLoadedError: function(event) {
+        this.isError = true;
+        console.log('_trashLoadedError', event);
+      },
+      _loadTrash: function(){
+        this.isLoading = true;
+        this.isError = false;
+        this.$.appApi.getTrash();
       },
       _emptyTrash: function(){
         this.$.appApi.emptyTrash();

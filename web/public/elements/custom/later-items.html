@@ -41,8 +41,10 @@
       }
     </style>
 
+    <failed-retry-button is-error="{{isError}}" on-retry="_reloadItems"></failed-retry-button>
+
     <!-- loading -->
-    <p class="loading" hidden$="{{!isLoading}}">Loading...</p>
+    <loading-indicator is-loading="{{isLoading}}"></loading-indicator>
 
     <div hidden$="{{isEmpty}}">
       <template is="dom-repeat" items="{{days}}">
@@ -69,8 +71,10 @@
     <add-element book-id="[[bookId]]" hidden$="{{isLoading}}" on-add-selected-element="_addElement"></add-element>
     
     <!-- api -->
-    <app-api id="appApi" book-id="[[bookId]]" on-later-items-loaded="_laterItemsLoaded" 
-    on-later-element-created="_laterItemCreated"></app-api>
+    <app-api id="appApi" book-id="[[bookId]]" 
+      on-later-items-loaded="_laterItemsLoaded" 
+      on-later-items-error="_laterItemsError"
+      on-later-element-created="_laterItemCreated"></app-api>
 
   </template>
   <script>
@@ -93,6 +97,10 @@
           type: Boolean,
           value: true,
         },
+        isError: {
+          type: Boolean,
+          value: false
+        },
         days: {
           type: Array,
           value: function () {
@@ -106,10 +114,18 @@
         this.$.appApi.getLaterItems();
       },
       _laterItemsLoaded: function () {
-        console.log('later items loaded', event.detail.items);
         this.days = event.detail.items;
         this.isLoading = false;
+        this.isError = false;
         this.isEmpty = this.days.length == 0;
+      },
+      _laterItemsError: function() {
+        this.isError = true;
+      },
+      _reloadItems: function (){
+        this.isLoading = true;
+        this.isError = false;
+        this.$.appApi.getLaterItems();
       },
       _taskItemsItemRemoved: function (data) {
         console.log('_taskItemsItemRemoved', data);

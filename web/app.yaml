@@ -26,6 +26,9 @@ handlers:
 - url: /img
   static_dir: public/images
   
+- url: /resources
+  static_dir: public/resources
+
 - url: /admin/.*
   script: _go_app
   login: admin

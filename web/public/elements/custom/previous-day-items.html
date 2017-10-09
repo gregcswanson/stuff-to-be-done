@@ -42,15 +42,11 @@
       }
     </style>
 
-
-
-    <!-- loading 
-    <p class="loading" hidden$="{{!isLoading}}">Loading...</p>-->
-
+    <loading-indicator is-loading="{{isLoading}}" message="previous days"></loading-indicator>
     <!-- items grouped by day -->
     <div hidden$="{{isLoading}}">
       <div hidden$="{{isEmpty}}">
-        <p class="previous-days">Open items on previous days</p>
+        <!-- <p class="previous-days">Open items on previous days</p> -->
         <template is="dom-repeat" items="{{days}}">
           <moment-js date="[[item.Display]]" date-format="YYYYMMDD" format="dddd Do MMMM, YYYY"></moment-js>
           <paper-material elevation="1" hidden$="{{isEmpty}}">
@@ -61,10 +57,14 @@
 
       </div>
     </div>
+    <failed-retry-button is-error="{{isError}}" on-retry="_reload"></failed-retry-button>
 
-    <!-- ajax calls / move to the api object  -->
-    <iron-ajax id="ajaxGetOpenDays" url="/api/v1/book/[[bookId]]/previous/[[dayAsString]]" handle-as="json" on-response="_ajaxGetOpenDaysResponse"></iron-ajax>
-    <app-api id="appApi" book-id="[[bookId]]"></app-api>
+    <app-api id="appApi" 
+      book-id="[[bookId]]"
+      day-as-string="[[dayAsString]]"
+      on-previous-tasks-loaded="_ajaxGetOpenDaysResponse"
+      on-previous-tasks-loaded-error="_ajaxGetOpenDaysError">
+    </app-api>
 
   </template>
   <script>
@@ -91,6 +91,10 @@
           type: Boolean,
           value: true
         },
+        isError:{
+          type: Boolean,
+          value: false,
+        },
         isLoading: {
           type: Boolean,
           value: true
@@ -102,23 +106,29 @@
       ready: function () {
         if (this.dayAsString.length !== 0){
           this.isLoading = true;
-          this.$.ajaxGetOpenDays.generateRequest();
+          this.$.appApi.getPreviousTasks();
         }
       },
       _onDayAsStringChanged: function (newValue) {
         if (newValue !== '') {
           this.isLoading = true;
-          this.$.ajaxGetOpenDays.generateRequest();
-
+          this.$.appApi.getPreviousTasks();
         }
+      },
+      _reload: function(){
+        this.isLoading = true;
+        this.$.appApi.getPreviousTasks();
       },
       daysAddedOrRemoved: function (changeRecord) {
         console.log('daysAddedOrRemoved', changeRecord, this.days.length);
         this.isEmpty = this.days.length == 0;
       },
-      _ajaxGetOpenDaysResponse: function (data) {
-        this.days = data.detail.response.data;
+      _ajaxGetOpenDaysResponse: function (ev) {
+        this.days = ev.detail.items; //data.detail.response.data;
         this.isLoading = false;
+      },
+      _ajaxGetOpenDaysError: function(data) {
+        this.isError = true;
       },
       _taskItemsItemRemoved: function (data) {
         console.log('_taskItemsItemRemoved', data);
@@ -130,98 +140,7 @@
           }
         }
       },
-      /*_elementUpdated: function (ev) {
-        var data = ev.detail;
-        this.currentTaskId = data.taskId;
-        var self = this;
-        this.findDayItem(data.taskId, function (day, item) {
-          self.$.ajaxUpdate.body = { DayID: item.DayID, TaskID: data.taskId, Data: data.elementData, IsCompleted: data.isCompleted };
-          self.$.ajaxUpdate.generateRequest();
-        });
-      },
-      _ajaxUpdateResponse: function (data) {
-        var result = data.detail.response.data;
-        var self = this;
-        this.findDayItem(result.TaskID, function (day, item, index, dayIndex) {
-          console.log('updated', day, item, index);
-          if (result.IsActioned || result.IsCompleted) {
-            self.removeItem(day, item, index, dayIndex, self);
-          }
-        });
-      },
-      removeItem: function (day, item, index, dayIndex, self) {
-        this.$.ajaxGetOpenDays.generateRequest();
-        return;
-        var newDays = [];
-        for (var i = 0; i < day.DayTasks.length; i++) {
-          if (i != index) {
-            newDays.push(day.DayTasks[i]);
-          }
-        }
-        if (newDays.length == 0) {
-          self.splice("days", dayIndex, 1);
-        } else {
-          self.set("days." + dayIndex + ".DayTasks", newDays);
-        }
-      },
-      findDayItem: function (taskId, callback) {
-        for (var i = 0; i < this.days.length; i++) {
-          var day = this.days[i];
-          for (var j = 0; j < day.DayTasks.length; j++) {
-            var item = day.DayTasks[j];
-            if (item.TaskID == taskId) {
-              callback(day, item, j, i);
-              return;
-            }
-          }
-        }
-      },
-      _elementDoLater: function (ev) {
-        var data = ev.detail;
-        data.dayId = '';
-        console.log('container element do later', data);
-        this.$.appApi.doTaskLater(data);
-      },
-      _taskDoLaterCompleted: function (ev) {
-        var data = ev.detail.item;
-        console.log('_taskDoLaterCompleted', data);
-        var self = this;
-        this.findDayItem(data.TaskID, function (day, item, index, dayIndex) {
-          console.log('do later', day, item, index);
-          self.removeItem(day, item, index, dayIndex, self);
-        });
-      },
-      _elementDoToday: function (ev) {
-        var data = ev.detail;
-        data.dayId = '';
-        this.$.appApi.doTaskToday(data);
-      },
-      _taskDoTodayCompleted: function (ev) {
-        var data = ev.detail.item;
-        console.log('_taskDoLaterCompleted', data);
-        var self = this;
-        this.findDayItem(data.TaskID, function (day, item, index, dayIndex) {
-          console.log('do today', day, item, index);
-          self.removeItem(day, item, index, dayIndex, self);
-          self.fire('item-moved-to-today', item);
-        });
-      },
-
-      _elementDelete: function (ev) {
-        var data = ev.detail;
-        this.$.appApi.deleteTask(data.taskId);
-      },
-      _taskDeleted: function (event) {
-        var data = event.detail.item;
-        console.log('_taskDeleted', data);
-        var taskID = data.TaskID;
-        var self = this;
-        this.findDayItem(taskID, function (day, item, index, dayIndex) {
-          console.log('deleted', day, item, index);
-          self.removeItem(day, item, index, dayIndex, self);
-        });
-      },*/
-
+      
     });
   </script>
 </dom-module>

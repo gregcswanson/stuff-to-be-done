@@ -1,0 +1,57 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<dom-module id="loading-indicator">
+  <template>
+    <style include="app-theme">
+       :host {
+        display: block;
+        text-align: center;
+      }
+      p {
+        font-size: 11px;
+        padding: 20px;
+        text-align: center;
+        font-style: italic;
+        color: #777;
+        margin: 10px 3px 3px 3px;
+        padding: 1px;
+      }
+
+      .loading-container {
+        display: block;
+        text-align: center;
+      }
+
+      paper-progress {
+        --paper-progress-active-color: var(--disabled-text-color, gray);
+        display: block;
+        text-align: center;
+        margin: 0 25%;
+        padding: 0;
+        width: 50%;
+      }
+      
+    </style>
+
+    <div hidden$="{{!isLoading}}" class="loading-container">
+          <p>Loading [[message]]...</p>
+          <paper-progress indeterminate></paper-progress>
+    </div>
+    
+  </template>
+  <script>
+    Polymer({
+      is: 'loading-indicator',
+      properties: {
+        isLoading: {
+          type: Boolean,
+          value: false
+        },
+        message: {
+          type: String,
+          value: '',
+        }
+      },
+      
+    });
+  </script>
+</dom-module>

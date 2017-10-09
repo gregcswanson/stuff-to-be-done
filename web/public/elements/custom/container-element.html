@@ -224,7 +224,7 @@
           el.elementData = data;
         }
         this.$.insertion.appendChild(el);
-        el.addEventListener("element-changed", function (ev) {
+          el.addEventListener("element-changed", function (ev) {
           //console.log('element-changed fired', ev.detail);
           self.elementData = JSON.stringify(ev.detail.data);
           self.isCompleted = ev.detail.isCompleted;

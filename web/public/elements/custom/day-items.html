@@ -37,41 +37,46 @@
       }
     </style>
 
+    <failed-retry-button is-error="{{isError}}" on-retry="reloadItems"></failed-retry-button>
 
-    <!-- loading -->
-    <p class="loading" hidden$="{{!isLoading}}">Loading...</p>
-
-    <div hidden$="{{isLoading}}">
-      <!-- items -->
-      <paper-material elevation="1" hidden$="{{isEmpty}}">
-        <template is="dom-repeat" items="{{items}}">
-          <!--<hr />
-          <json-string-converter data-string="{{item.Data}}" data-json="{{item.jsonData}}"></json-string-converter>
-          <p>{{item.Data}}</p>
-          <paper-textarea type="text" placeholder="String" value="{{item.Data::input}}" on-change="_textChanged"
-          on-blur="_blur" no-label-float></paper-textarea>
-          <p>{{item.jsonData.text}}</p>
-          <paper-textarea type="text" placeholder="Json" value="{{item.jsonData.text::input}}" on-change="_textChanged"
+    <div hidden$="{{isError}}">
+      <!-- loading -->
+      <loading-indicator is-loading="{{isLoading}}" message=""></loading-indicator>
+      
+      <div hidden$="{{isLoading}}">
+          <!-- items -->
+          <paper-material elevation="1" hidden$="{{isEmpty}}">
+            <template is="dom-repeat" items="{{items}}">
+              <!--<hr />
+              <json-string-converter data-string="{{item.Data}}" data-json="{{item.jsonData}}"></json-string-converter>
+              <p>{{item.Data}}</p>
+              <paper-textarea type="text" placeholder="String" value="{{item.Data::input}}" on-change="_textChanged"
               on-blur="_blur" no-label-float></paper-textarea>
-          <hr /> -->
-          <container-element id="[[item.DayID]]" child-name="[[item.ElementName]]" task-id="[[item.TaskID]]" day-id="[[item.DayID]]"
-            book-id="[[bookId]]" comment-text="[[item.Comment]]" is-completed="[[item.IsCompleted]]"
-            is-actioned="[[item.IsActioned]]"
-            is-saving="[[item.IsSaving]]"
-             show-later show-today=[[canShowToday]]
-            can-reopen=[[item.CanReopen]] is-completed-view={{item.IsCompleted}} element-data="[[item.Data]]" on-element-updated="_elementUpdated"
-            on-element-delete="_elementDelete" on-element-do-later="_elementDoLater" on-element-do-today="_elementDoToday">
-          </container-element>
-        </template>
-      </paper-material>
-
-      <paper-material class="no-items" elevation="1" hidden$="{{!isEmpty}}">
-        <p>No items</p>
-      </paper-material>
-
-      <!-- action button -->
-      <add-element book-id="[[bookId]]" on-add-selected-element="_addElement"></add-element>
+              <p>{{item.jsonData.text}}</p>
+              <paper-textarea type="text" placeholder="Json" value="{{item.jsonData.text::input}}" on-change="_textChanged"
+                  on-blur="_blur" no-label-float></paper-textarea>
+              <hr /> -->
+              <container-element id="[[item.DayID]]" child-name="[[item.ElementName]]" task-id="[[item.TaskID]]" day-id="[[item.DayID]]"
+                book-id="[[bookId]]" comment-text="[[item.Comment]]" is-completed="[[item.IsCompleted]]"
+                is-actioned="[[item.IsActioned]]"
+                is-saving="[[item.IsSaving]]"
+                 show-later show-today=[[canShowToday]]
+                can-reopen=[[item.CanReopen]] is-completed-view={{item.IsCompleted}} element-data="[[item.Data]]" on-element-updated="_elementUpdated"
+                on-element-delete="_elementDelete" on-element-do-later="_elementDoLater" on-element-do-today="_elementDoToday">
+              </container-element>
+            </template>
+          </paper-material>
+    
+          <paper-material class="no-items" elevation="1" hidden$="{{!isEmpty}}">
+            <p>No items</p>
+          </paper-material>
+    
+          <!-- action button -->
+          <add-element book-id="[[bookId]]" on-add-selected-element="_addElement"></add-element>
+        </div>
     </div>
+
+    
     <!-- undo button -->
     <template is="dom-if" if="{{undoDeleteTaskId}}">
       <paper-button on-tap="_restoreItem">
@@ -95,6 +100,7 @@
       book-id="[[bookId]]" 
       day-as-string="[[dayAsString]]"
       on-day-tasks-loaded="_tasksLoaded"
+      on-day-tasks-loaded-error="_tasksLoadedError"
       on-task-deleted="_taskDeleted" 
       on-task-do-today-completed="_taskDoTodayCompleted">
     </app-api>
@@ -140,6 +146,10 @@
           type: Boolean,
           value: true
         },
+        isError: {
+          type: Boolean,
+          value: false
+        },
         canShowToday: {
           type: Boolean,
           value: false
@@ -152,6 +162,7 @@
         if (newValue !== '') {
           this.items = [];
           this.isLoading = true;
+          this.isError = false;
           this.$.appApi.getDayTasks();
           //this.$.ajaxGetDayItems.generateRequest();
         }
@@ -161,6 +172,7 @@
       },
       reloadItems: function () {
         this.isLoading = true;
+        this.isError = false;
         this.$.appApi.getDayTasks();
         //this.$.ajaxGetDayItems.generateRequest();
       },
@@ -171,6 +183,9 @@
         console.log('_tasksLoaded', ev);
         this.items = ev.detail.items;
         this.isLoading = false;
+      },
+      _tasksLoadedError: function(event) {
+        this.isError = true;
       },
       _addElement: function (ev) {
         var item = ev.detail.item;
@@ -213,6 +228,7 @@
       _ajaxUpdateDayItemResponse: function (data) {
         var result = data.detail.response.data;
         console.log('_ajaxUpdateDayItemResponse', data.detail.response.data);
+        
         var item = this.items.find(function (f) { return f.TaskID == result.TaskID });
         //console.log('refresh item', item);
         if (item) {
@@ -220,11 +236,15 @@
           this.set("items." + index + ".IsSaving", false);
           // only refresh the element if its state changes in some way from the 
           // server, this is janky to say the least. probably a better way to do this
+          // really this should not be required, updating the item will
+          // not change it from its last end values, only
+          // the delete or do later will
           if (this.items[index].elementData !== result.elementData 
             || this.items[index].CanReopen !== result.CanReopen
             || this.items[index].IsActioned !== result.IsActioned
             || this.items[index].IsComplete !== result.IsComplete){
             this.splice('items', index, 1, result);
+            //console.log("Ignoing changes to element, last change wins", result)
           } 
         }
       },

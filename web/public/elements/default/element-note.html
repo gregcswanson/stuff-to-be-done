@@ -5,7 +5,6 @@
              :host {
                 display: block;
                 position: relative;
-                x-background-color: white;
                 color: darkslategray;
                 padding: 0;
             }
@@ -38,8 +37,8 @@
                 white-space: pre-line;
                 margin: 0 0 0 40px;
                 color: var(--secondary-text-color, black);
-                border-left: 5px solid var(--dark-primary-color, gray);
-                padding-left: 10px;
+                x-border-left: 5px solid var(--dark-primary-color, gray);
+                x-padding-left: 10px;
                 font-style: italic;
                 font-size: 13px;
                 min-height: 18px;
@@ -56,8 +55,8 @@
             }
 
             paper-textarea {
-                border-left: 5px solid var(--dark-primary-color, gray);
-                padding-left: 10px;
+                x-border-left: 5px solid var(--dark-primary-color, gray);
+                x-padding-left: 2px;
             }
 
             paper-textarea {

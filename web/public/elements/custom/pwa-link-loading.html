@@ -1,0 +1,54 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<dom-module id="pwa-link-loading">
+  <template>
+    <style include="app-theme">
+       :host {
+        display: block;
+        text-align: center;
+      }
+      paper-progress {
+        --paper-progress-active-color: var(--dark-primary-color, gray);
+        display: block;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+      }
+    </style>
+
+    <div hidden$="{{!isLoading}}">
+        <paper-progress indeterminate></paper-progress>
+    </div>
+    
+  </template>
+  <script>
+    Polymer({
+      is: 'pwa-link-loading',
+      properties: {
+        isLoading: {
+          type: Boolean,
+          value: false
+        },
+      },
+      ready: function () {
+        var baseRegex = new RegExp( `${ window.location.hostname}` );
+        var self = this;
+        // only show this in the PWA mode
+        if ( window.matchMedia( '(display-mode: standalone)' ).matches ) {
+          window.addEventListener( 'click', function() {
+            if (
+              event.target.tagName === 'A' &&
+              ! baseRegex.test( event.target.href )
+            ){
+              window.open( event.target.href );
+              event.preventDefault();
+            } else {
+              console.log('loading page transition');
+              self.isLoading = true;
+            }
+          } );
+        }
+      },
+      
+    });
+  </script>
+</dom-module>

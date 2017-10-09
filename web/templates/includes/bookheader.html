@@ -2,6 +2,17 @@
 <!doctype html>
 <head>
     <title>Jot down / today</title>
+    <link rel="manifest" href="/resources/manifest.json">
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Jot down today">
+    <meta name="apple-mobile-web-app-title" content="Jot down today">
+    <meta name="theme-color" content="#FF9800">
+    <meta name="msapplication-navbutton-color" content="#FF9800">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="msapplication-starturl" content="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://fonts.googleapis.com/css?family=Work+Sans:300" rel="stylesheet">
     <link rel="stylesheet" href="/stylesheets/site.css" />
     {{ if .isProduction }}
@@ -20,4 +31,5 @@
 
     <!-- <h1 class="page-title">{{.title}}</h1> -->
     <book-page-header title={{.title}} book-id="{{.bookID}}"></book-page-header>
+    <pwa-link-loading></pwa-link-loading>
     {{ end }}

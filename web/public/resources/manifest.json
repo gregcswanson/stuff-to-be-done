@@ -1,0 +1,16 @@
+{
+    "name": "Jot down today",
+    "short_name": "Jot down today",
+    "description": "Keep track of what you should, and could, have done",
+    "lang": "en-US",
+    "start_url": "/",
+    "display": "standalone",
+    "theme_color": "#FF9800",
+    "icons": [
+      {
+        "src": "/img/Jot down today",
+        "sizes": "128x128",
+        "type": "png"
+      }
+    ]
+  }
