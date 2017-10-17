@@ -32,14 +32,17 @@ handlers:
 - url: /admin/.*
   script: _go_app
   login: admin
+  secure: always
 
 - url: /app/.*
   script: _go_app
   login: required
+  secure: always
 
 - url: /.*
   script: _go_app
   login: optional
+  secure: always
 
 skip_files:
 - ^(.*/)?#.*#$

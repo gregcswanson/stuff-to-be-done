@@ -7,7 +7,7 @@ import (
 
 func PrivacyHandler(c *gin.Context) {
   user := GetAppUser(c)
-  c.HTML(http.StatusOK, "privacy.html", gin.H{
+  c.HTML(http.StatusOK, "privacypolicy.htm", gin.H{
         "title": "Privacy Policy",
         "logouturl" : user.LogoutUrl,
         "isLoggedIn": user.IsLoggedIn,
