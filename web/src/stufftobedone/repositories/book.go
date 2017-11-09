@@ -9,15 +9,15 @@
 package repositories
 
 import (
-	"net/http"
 	"appengine"
 	"appengine/datastore"
-	"stufftobedone/domain"
 	"log"
+	"net/http"
+	"stufftobedone/domain"
 )
 
 type BookRepository struct {
-  request    *http.Request
+	request *http.Request
 }
 
 func NewBookRepository(request *http.Request) *BookRepository {
@@ -26,33 +26,33 @@ func NewBookRepository(request *http.Request) *BookRepository {
 	return r
 }
 
-func (r *BookRepository) GetDefault(user domain.AppUser)(domain.Book, error) {
+func (r *BookRepository) GetDefault(user domain.AppUser) (domain.Book, error) {
 	book := domain.Book{}
 	var bookUsers []domain.BookUser
-	
+
 	// find the default book for this user
 	globalContext := appengine.NewContext(r.request)
 	q := datastore.NewQuery("BookUsers").Filter("UserID =", user.ID).Filter("IsDefault =", true)
 	keys, err := q.GetAll(globalContext, &bookUsers)
-    
-	if err != nil {    
+
+	if err != nil {
 		log.Println(err)
 		return book, err
-	} else if len(bookUsers) > 0 {    
+	} else if len(bookUsers) > 0 {
 		log.Println("Found the default book")
 		// we only care about the first default book
 		book, err = r.GetBook(bookUsers[0].BookID)
 		return book, err
 	}
-    
+
 	// No default book was found to process invitations
 	// select first book, set it as default, if none then
 	q = datastore.NewQuery("BookUsers").Filter("UserID =", user.ID)
 	keys, err = q.GetAll(globalContext, &bookUsers)
-	if err != nil {   
-		log.Println(err) 
+	if err != nil {
+		log.Println(err)
 		return book, err
-	} else if len(keys) > 0 {    
+	} else if len(keys) > 0 {
 		// select the first book as the defeault and store it
 		log.Println("setting the first linked book as default and returning")
 		bookUser := bookUsers[0]
@@ -85,7 +85,7 @@ func (r *BookRepository) GetBook(bookID string) (domain.Book, error) {
 		return book, err
 	}
 	// get the item from the datastore
-	err = datastore.Get(globalContext, key, &book);
+	err = datastore.Get(globalContext, key, &book)
 	book.ID = bookID
 
 	return book, err
@@ -103,12 +103,12 @@ func (r *BookRepository) GetBookUsers(user domain.AppUser, bookID string) (domai
 func (r *BookRepository) StoreBookUser(bookUser domain.BookUser) (domain.BookUser, error) {
 	// upsert operation
 	globalContext := appengine.NewContext(r.request)
-  
-  	err := datastore.RunInTransaction(globalContext, func(c appengine.Context) error {
-        
-        if bookUser.ID != "" {
+
+	err := datastore.RunInTransaction(globalContext, func(c appengine.Context) error {
+
+		if bookUser.ID != "" {
 			// update
-			key , err := datastore.DecodeKey(bookUser.ID)
+			key, err := datastore.DecodeKey(bookUser.ID)
 			if err != nil {
 				return err
 			}
@@ -125,25 +125,25 @@ func (r *BookRepository) StoreBookUser(bookUser domain.BookUser) (domain.BookUse
 				bookUser.ID = key.Encode()
 			}
 		}
-        
-        return nil
-    }, nil)
-    if err != nil {
-        return bookUser, err
-    }
-  
+
+		return nil
+	}, nil)
+	if err != nil {
+		return bookUser, err
+	}
+
 	return bookUser, nil
 }
 
 func (r *BookRepository) StoreBook(book domain.Book) (domain.Book, error) {
 	// upsert operation
 	globalContext := appengine.NewContext(r.request)
-  
-  	err := datastore.RunInTransaction(globalContext, func(c appengine.Context) error {
-        
-        if book.ID != "" {
+
+	err := datastore.RunInTransaction(globalContext, func(c appengine.Context) error {
+
+		if book.ID != "" {
 			// update
-			key , err := datastore.DecodeKey(book.ID)
+			key, err := datastore.DecodeKey(book.ID)
 			if err != nil {
 				return err
 			}
@@ -160,13 +160,13 @@ func (r *BookRepository) StoreBook(book domain.Book) (domain.Book, error) {
 				book.ID = key.Encode()
 			}
 		}
-        
-        return nil
-    }, nil)
-    if err != nil {
-        return book, err
-    }
-  
+
+		return nil
+	}, nil)
+	if err != nil {
+		return book, err
+	}
+
 	return book, nil
 }
 
@@ -190,4 +190,3 @@ func (r *BookRepository) Create(user domain.AppUser, name string) (domain.Book, 
 	log.Println("BookUser created")
 	return createdBook, err
 }
-

@@ -48,6 +48,7 @@
       }
     </style>
     <div class="container">
+      
       <div class="date-selector">
         <paper-material elevation="1">
           <paper-date-picker date="[[date]]" on-date-changed="_dateChanged"></paper-date-picker>
@@ -55,6 +56,7 @@
       </div>
       <day-items day-as-string="[[dayAsString]]" book-id="[[bookId]]"></day-items>
     </div>
+    <calendar-navigator></calendar-navigator>
     
   </template>
   <script>

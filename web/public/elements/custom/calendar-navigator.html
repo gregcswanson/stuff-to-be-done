@@ -1,0 +1,42 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<dom-module id="calendar-navigator">
+  <template>
+    <style include="app-theme">
+       :host {
+        display: block;
+      }
+      
+      div.container {
+        background-color: #666;
+        opacity: 0.5;
+        border-radius: 3px;
+        padding: 3px;
+      }
+
+    </style>
+    <div class="container">
+      <button class="back">previous</button>
+      <!-- calendaer selector -->
+      <button class="next">next</button>
+    </div>
+    
+  </template>
+  <script>
+    Polymer({
+      is: 'calendar-navigator',
+      properties: {
+        date: {
+          type: Date,
+          value: function () {
+            var date = new Date();
+            return date;
+          }
+        },
+      },
+      ready: function () {
+        
+      },
+      
+    });
+  </script>
+</dom-module>

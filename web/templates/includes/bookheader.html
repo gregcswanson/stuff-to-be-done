@@ -16,10 +16,10 @@
     <link href="https://fonts.googleapis.com/css?family=Work+Sans:300" rel="stylesheet">
     <link rel="stylesheet" href="/stylesheets/site.css" />
     {{ if .isProduction }}
-    <script src="/js/webcomponents.min.js"></script>
+    <script src="/js/webcomponents-lite.min.js"></script>
     <link rel="import" href="/js/elements.html">
     {{ else }}
-    <script src="/bower_components/webcomponentsjs/webcomponents.js"></script>
+    <script src="/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
     <link rel="import" href="/customelements/elements.html">
     {{ end }}
     <script src='/js/app.js'></script>  

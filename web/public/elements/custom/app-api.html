@@ -14,8 +14,20 @@
       url="/api/v1/book/[[bookId]]/day/[[dayAsString]]" 
       handle-as="json" 
       on-response="_ajaxCreateDayItemPostResponse"
-      on-error="_a"></iron-ajax>
+      on-error="_ajaxCreateDayItemError"></iron-ajax>
     
+      <iron-ajax 
+        id="ajaxUpdateDayItem" 
+        x-content-type="application/json" 
+        content-type="application/x-www-form-urlencoded" 
+        method="PUT"
+        url="/api/v1/book/[[bookId]]/day/[[currentTaskId]]" 
+        handle-as="json" 
+        on-response="_ajaxUpdateDayItemResponse"
+        on-error="_ajaxUpdateDayItemError"></iron-ajax>
+
+    
+
     <iron-ajax
         id="ajaxGetDayItems"
         url="/api/v1/book/[[bookId]]/day/[[dayAsString]]" 
@@ -55,7 +67,8 @@
         method="PUT"
         url="/api/v1/book/[[bookId]]/dolater/[[currentTaskId]]"
         handle-as="json"
-        on-response="_ajaxPutDoTaskLaterResponse"></iron-ajax>
+        on-response="_ajaxPutDoTaskLaterResponse"
+        on-error="_ajaxPutDoTaskLaterError"></iron-ajax>
     <iron-ajax
         id="ajaxDoToday"
         x-content-type="application/json"
@@ -125,9 +138,24 @@
                 notify: true
             },
         },
+        createElement: function(elementName){
+            this.$.ajaxCreateDayItem.body = { elementName: elementName };
+            this.$.ajaxCreateDayItem.generateRequest();
+        },
+        _ajaxCreateDayItemPostResponse: function (event) {
+            this.fire('element-created', { item: event.detail.response.data }, { bubbles: true });
+        },
+        _ajaxCreateDayItemError: function (error) {
+            this.fire('element-created-error', error, { bubbles: true });
+        },
+
+
         createElementForLater: function(elementName, dayAsString){
             this.$.ajaxLaterPost.body = { elementName: elementName, dayAsString: dayAsString };
             this.$.ajaxLaterPost.generateRequest();
+        },
+        _laterPostResponse: function(data) {
+            this.fire('later-element-created', { item: event.detail.response.data }, { bubbles: true });
         },
         getDayTasks: function() {
             this.$.ajaxGetDayItems.generateRequest();
@@ -135,11 +163,8 @@
         _ajaxGetDayItemsResponse: function (data) {
             this.fire('day-tasks-loaded', { items: event.detail.response.data }, { bubbles: true });
         },
-        _ajaxGetDayItemsError: function(data) {
+        _ajaxGetDayItemsError: function(error) {
             this.fire('day-tasks-loaded-error', error, { bubbles: true });
-        },
-        _laterPostResponse: function(data) {
-            this.fire('later-element-created', { item: event.detail.response.data }, { bubbles: true });
         },
         getCompletedItems: function(){
             this.$.ajaxGetCompletedItems.generateRequest();
@@ -164,7 +189,7 @@
         _ajaxGetOpenDaysResponse: function(data) {
             this.fire('previous-tasks-loaded', { items: event.detail.response.data }, { bubbles: true });
         },
-        _ajaxGetOpenDaysError: function(data) {
+        _ajaxGetOpenDaysError: function(error) {
             this.fire('previous-tasks-loaded-error', error, { bubbles: true });
         },
         getTrash: function(){
@@ -200,6 +225,9 @@
         _ajaxPutDoTaskLaterResponse: function(event){
             console.log('_ajaxPutDoTaskLaterResponse', event.detail.response.data);
             this.fire('task-do-later-completed', { item: event.detail.response.data }, { bubbles: true });
+        },
+        _ajaxPutDoTaskLaterError: function(error){
+            this.fire('task-do-later-error', error, { bubbles: true });
         },
         saveComment: function(dayID, taskID, comment ){
             this.$.ajaxDayComment.body = {TaskID: taskID, DayID: dayID, Comment: comment };
@@ -244,6 +272,18 @@
           console.log('_ajaxDeleteTaskResponse', data.detail.response.data);
           var taskID = data.detail.response.data.TaskID;
           this.fire('task-deleted', { item: { TaskID: taskID } }, { bubbles: true });
+        },
+        updateTask: function(task){
+            this.currentTaskId = task.taskId;
+            //this.$.ajaxUpdateDayItem.body = { DayID: item.DayID, TaskID: data.taskId, Data: data.elementData, IsCompleted: data.isCompleted };
+            this.$.ajaxUpdateDayItem.body = { DayID: task.dayId, TaskID: task.taskId, Data: task.elementData, IsCompleted: task.isCompleted };
+            this.$.ajaxUpdateDayItem.generateRequest();
+        },
+        _ajaxUpdateDayItemResponse: function (event) {
+            this.fire('task-updated', { item: event.detail.response.data }, { bubbles: true });
+        },
+        _ajaxUpdateDayItemError: function (error) {
+            this.fire('task-updated-error', error, { bubbles: true });
         },
     });
   </script>

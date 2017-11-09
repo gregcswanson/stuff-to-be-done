@@ -1,15 +1,15 @@
 package repositories
 
 import (
-	"net/http"
 	"appengine"
-    "strconv"
-  	"strings"
-    "appengine/memcache"
+	"appengine/memcache"
+	"net/http"
+	"strconv"
+	"strings"
 )
 
 type AppCache struct {
-  request    *http.Request
+	request *http.Request
 }
 
 func NewAppCache(request *http.Request) *AppCache {
@@ -18,18 +18,18 @@ func NewAppCache(request *http.Request) *AppCache {
 	return r
 }
 
-func (a *AppCache) Prepare(subject string, key string) (string) {
+func (a *AppCache) Prepare(subject string, key string) string {
 	keys := []string{subject, key}
-    cacheKey := strings.Join(keys,"-")
+	cacheKey := strings.Join(keys, "-")
 	return cacheKey
 }
 
 func (a *AppCache) Get(subject string, key string) (string, bool) {
 	globalContext := appengine.NewContext(a.request)
-    cacheKey := a.Prepare(subject, key)
+	cacheKey := a.Prepare(subject, key)
 	if item, err := memcache.Get(globalContext, cacheKey); err != memcache.ErrCacheMiss && err == nil {
-        return string(item.Value), true
-    } 
+		return string(item.Value), true
+	}
 	return "", false
 }
 
@@ -45,19 +45,19 @@ func (a *AppCache) GetInt(subject string, key string) (int, bool) {
 	return stringValue, found
 }
 
-func (a *AppCache) Set(subject string, key string, value string) (error) {
+func (a *AppCache) Set(subject string, key string, value string) error {
 	a.Clear(subject, key)
 	globalContext := appengine.NewContext(a.request)
 	cacheKey := a.Prepare(subject, key)
 	item := &memcache.Item{
-        Key:   cacheKey,
-        Value: []byte(value),
-    }
-    memcache.Add(globalContext, item)
+		Key:   cacheKey,
+		Value: []byte(value),
+	}
+	memcache.Add(globalContext, item)
 	return nil
 }
 
-func (a *AppCache) SetInt(subject string, key string , value int) (error) {
+func (a *AppCache) SetInt(subject string, key string, value int) error {
 	return a.Set(subject, key, strconv.Itoa(value))
 }
 
@@ -66,9 +66,9 @@ func (a *AppCache) Clear(subject string, key string) {
 	cacheKey := a.Prepare(subject, key)
 	if _, err := memcache.Get(globalContext, cacheKey); err == memcache.ErrCacheMiss {
 		//
-  	} else if err != nil {
-    	//
-  	} else {
-    	memcache.Delete(globalContext, cacheKey)
-  }
+	} else if err != nil {
+		//
+	} else {
+		memcache.Delete(globalContext, cacheKey)
+	}
 }

@@ -77,32 +77,35 @@
     </div>
 
     
-    <!-- undo button -->
+    <!-- undo button
     <template is="dom-if" if="{{undoDeleteTaskId}}">
       <paper-button on-tap="_restoreItem">
         Undo last delete
       </paper-button>
-    </template>
+    </template> -->
     <!-- ajax calls -->
     <!--
       <iron-ajax id="ajaxGetDayItems" url="/api/v1/book/[[bookId]]/day/[[dayAsString]]" handle-as="json" on-response="_ajaxGetDayItemsResponse"></iron-ajax>
-      -->
+      
     <iron-ajax id="ajaxCreateDayItem" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="POST"
       url="/api/v1/book/[[bookId]]/day/[[dayAsString]]" handle-as="json" on-response="_ajaxCreateDayItemPostResponse"></iron-ajax>
+    
     <iron-ajax id="ajaxUpdateDayItem" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="PUT"
       url="/api/v1/book/[[bookId]]/day/[[currentTaskId]]" handle-as="json" on-response="_ajaxUpdateDayItemResponse"></iron-ajax>
     <iron-ajax id="ajaxDoLaterDayItem" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="PUT"
       url="/api/v1/book/[[bookId]]/dolater/[[currentTaskId]]" handle-as="json" on-response="_ajaxDoLaterResponse"></iron-ajax>
-    <iron-ajax id="laterRestore" x-content-type="application/json" content-type="application/x-www-form-urlencoded" method="PUT"
-      url="/api/v1/book/[[bookId]]/later/[[currentTaskId]]/restore" handle-as="json" on-response="_laterRestoreResponse"></iron-ajax>
-
+    -->
     <app-api id="appApi" 
       book-id="[[bookId]]" 
       day-as-string="[[dayAsString]]"
+      on-element-created="_elementCreated"
       on-day-tasks-loaded="_tasksLoaded"
       on-day-tasks-loaded-error="_tasksLoadedError"
       on-task-deleted="_taskDeleted" 
-      on-task-do-today-completed="_taskDoTodayCompleted">
+      on-task-do-today-completed="_taskDoTodayCompleted"
+      on-task-do-later-completed="_doLaterResponse"
+      on-task-updated="_ajaxUpdateDayItemResponse"
+      on-element-created="_laterItemCreated">
     </app-api>
 
   </template>
@@ -127,10 +130,10 @@
           type: String,
           value: '',
         },
-        undoDeleteTaskId: {
+        /*undoDeleteTaskId: {
           type: String,
           value: '',
-        },
+        },*/
         items: {
           type: Array,
           value: function () {
@@ -188,68 +191,53 @@
         this.isError = true;
       },
       _addElement: function (ev) {
-        var item = ev.detail.item;
+        //var item = ev.detail.item;
+        this.$.appApi.createElement(ev.detail.item.ElementName);
         // ajax request to create default object
-        this.$.ajaxCreateDayItem.body = { elementName: item.ElementName };
-        this.$.ajaxCreateDayItem.generateRequest();
+        //this.$.ajaxCreateDayItem.body = { elementName: item.ElementName };
+        //this.$.ajaxCreateDayItem.generateRequest();
       },
-      _elementDoLater: function (ev) {
-        var data = ev.detail;
-        this.currentTaskId = data.taskId;
-        // find the dayId from the current list
-        var item = this.items.find(function (f) { return f.TaskID == data.taskId });
-        if (item != null) {
-          item.IsSaving = true;
-          this.$.ajaxDoLaterDayItem.body = { DayID: item.DayID, TaskID: data.taskId, Data: data.elementData, IsCompleted: data.isCompleted };
-          this.$.ajaxDoLaterDayItem.generateRequest();
-        }
+      _elementCreated: function (ev){
+        var task = ev.detail.item;
+        this.push('items', task);
+        // fire after updated
+        this.justAdded = { taskId: task.TaskID, text: '' };
+        setTimeout(this._onCreatedTimeout.bind(this), 100);
       },
-      _restoreItem: function () {
+      
+      /*_restoreItem: function () {
         this.currentTaskId = this.undoDeleteTaskId;
         this.$.laterRestore.body = { ID: this.undoDeleteTaskId };
         this.$.laterRestore.generateRequest();
-      },
-      //_ajaxGetDayItemsResponse: function (data) {
-      //  this.items = data.detail.response.data;
-      //  this.isLoading = false;
-      //},
+      },*/
+      
       _onCreatedTimeout: function () {
         // send the set inital focus request
         this.fire('set-initial-focus', this.justAdded);
       },
-      _ajaxCreateDayItemPostResponse: function (data) {
+      /*_ajaxCreateDayItemPostResponse: function (data) {
         // check for error codes?
         this.push('items', data.detail.response.data);
         // fire after updated
         this.justAdded = { taskId: data.detail.response.data.TaskID, text: '' };
         setTimeout(this._onCreatedTimeout.bind(this), 100);
 
-      },
-      _ajaxUpdateDayItemResponse: function (data) {
-        var result = data.detail.response.data;
-        console.log('_ajaxUpdateDayItemResponse', data.detail.response.data);
-        
-        var item = this.items.find(function (f) { return f.TaskID == result.TaskID });
-        //console.log('refresh item', item);
-        if (item) {
-          var index = this.items.indexOf(item);
-          this.set("items." + index + ".IsSaving", false);
-          // only refresh the element if its state changes in some way from the 
-          // server, this is janky to say the least. probably a better way to do this
-          // really this should not be required, updating the item will
-          // not change it from its last end values, only
-          // the delete or do later will
-          if (this.items[index].elementData !== result.elementData 
-            || this.items[index].CanReopen !== result.CanReopen
-            || this.items[index].IsActioned !== result.IsActioned
-            || this.items[index].IsComplete !== result.IsComplete){
-            this.splice('items', index, 1, result);
-            //console.log("Ignoing changes to element, last change wins", result)
-          } 
+      },*/
+      
+      _elementDoLater: function (ev) {
+        var data = ev.detail;
+        this.currentTaskId = data.taskId;
+        // find the dayId from the current list
+        var item = this.items.find(function (f) { return f.TaskID == data.taskId });
+        if (item != null) {
+          this.set("items." + this.items.indexOf(item) + ".IsSaving", true);
+          data.dayId = item.DayID;
+          //this.$.ajaxDoLaterDayItem.body = { DayID: item.DayID, TaskID: data.taskId, Data: data.elementData, IsCompleted: data.isCompleted };
+          this.$.appApi.doTaskLater(data);
         }
       },
-      _ajaxDoLaterResponse: function (data) {
-        var result = data.detail.response.data;
+      _doLaterResponse: function (ev) {
+        var result = ev.detail.item; //data.item; //detail.response.data;
         var item = this.items.find(function (f) { return f.TaskID == result.TaskID });
         if (item) {
           var index = this.items.indexOf(item);
@@ -272,10 +260,10 @@
           this.splice('items', index, 1);
         }
       },
-      _laterRestoreResponse: function (data) {
+      /*_laterRestoreResponse: function (data) {
         this.$.laterGet.generateRequest();
         this.undoDeleteTaskId = "";
-      },
+      },*/
       _elementUpdated: function (ev) {
         console.log(ev);
         var data = ev.detail;
@@ -285,19 +273,50 @@
         var item = this.items.find(function (f) { return f.TaskID == data.taskId });
         if (item != null) {
           this.set("items." + this.items.indexOf(item) + ".IsSaving", true);
-          this.$.ajaxUpdateDayItem.body = { DayID: item.DayID, TaskID: data.taskId, Data: data.elementData, IsCompleted: data.isCompleted };
-          this.$.ajaxUpdateDayItem.generateRequest();
+          data.dayId = item.DayID;
+          this.$.appApi.updateTask(data);
+          //this.$.ajaxUpdateDayItem.body = { DayID: item.DayID, TaskID: data.taskId, Data: data.elementData, IsCompleted: data.isCompleted };
+          //this.$.ajaxUpdateDayItem.generateRequest();
         }
 
       },
-
+      _ajaxUpdateDayItemResponse: function (ev) {
+        var result = ev.detail.item; //data.item;
+        
+        var item = this.items.find(function (f) { return f.TaskID == result.TaskID });
+        //console.log('refresh item', item);
+        if (item) {
+          var index = this.items.indexOf(item);
+          this.set("items." + index + ".IsSaving", false);
+          // only refresh the element if its state changes in some way from the 
+          // server, this is janky to say the least. probably a better way to do this
+          // really this should not be required, updating the item will
+          // not change it from its last end values, only
+          // the delete or do later will
+          if (this.items[index].elementData !== result.elementData 
+            || this.items[index].CanReopen !== result.CanReopen
+            || this.items[index].IsActioned !== result.IsActioned
+            || this.items[index].IsComplete !== result.IsComplete){
+            this.splice('items', index, 1, result);
+            //console.log("Ignoing changes to element, last change wins", result)
+          } 
+        }
+      },
       _elementDelete: function (ev) {
         var data = ev.detail;
+        var item = this.items.find(function (f) { return f.TaskID == data.taskId });
+        if (item != null) {
+          this.set("items." + this.items.indexOf(item) + ".IsSaving", true);
+        }
         this.$.appApi.deleteTask(data.taskId);
       },
       _elementDoToday: function (ev) {
         var data = ev.detail;
         data.dayId = '';
+        var item = this.items.find(function (f) { return f.TaskID == data.taskId });
+        if (item != null) {
+          this.set("items." + this.items.indexOf(item) + ".IsSaving", true);
+        }
         this.$.appApi.doTaskToday(data);
       },
       _taskDoTodayCompleted: function (ev) {

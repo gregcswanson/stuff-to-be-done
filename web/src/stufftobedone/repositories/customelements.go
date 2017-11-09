@@ -1,14 +1,14 @@
 package repositories
 
 import (
+	"io/ioutil"
+	"log"
 	"net/http"
-    "stufftobedone/domain"
-    "io/ioutil"
-    "log"
+	"stufftobedone/domain"
 )
 
 type CustomElementRepository struct {
-  request    *http.Request
+	request *http.Request
 }
 
 func NewCustomElementRepository(request *http.Request) *CustomElementRepository {
@@ -18,9 +18,9 @@ func NewCustomElementRepository(request *http.Request) *CustomElementRepository 
 }
 
 func (r *CustomElementRepository) GetByName(elementName string) (domain.CustomElement, error) {
-    customElement := domain.CustomElement{}
-    if elementName == "/x-element-to-do.html" {
-        customElement.Body = `
+	customElement := domain.CustomElement{}
+	if elementName == "/x-element-to-do.html" {
+		customElement.Body = `
             <dom-module id="element-to-do">
                 <template>
                     <style>
@@ -65,8 +65,8 @@ func (r *CustomElementRepository) GetByName(elementName string) (domain.CustomEl
                 </script>
                 </dom-module>
         `
-    } else  if elementName == "/x-element-meeting.html" {
-        customElement.Body = `
+	} else if elementName == "/x-element-meeting.html" {
+		customElement.Body = `
             <dom-module id="element-meeting">
                 <template>
                     <style>
@@ -119,27 +119,26 @@ func (r *CustomElementRepository) GetByName(elementName string) (domain.CustomEl
                 </script>
                 </dom-module>
         `
-    } else  { //} if elementName == "/element-test.html" {
-        // read the element from the file
-        buf, err := ioutil.ReadFile("./public/elements/default" + elementName)
-        if err != nil {
-            log.Println("read element failed", err) 
-        }
-        customElement.Body = string(buf)
-    }
+	} else { //} if elementName == "/element-test.html" {
+		// read the element from the file
+		buf, err := ioutil.ReadFile("./public/elements/default" + elementName)
+		if err != nil {
+			log.Println("read element failed", err)
+		}
+		customElement.Body = string(buf)
+	}
 	return customElement, nil
 }
 
 func (r *CustomElementRepository) FindBookElements(bookID string) ([]domain.BookElement, error) {
-    toDoElement := domain.BookElement{ Name: "To-do", ElementName: "element-to-do", Icon: "check-box" }
-    noteElement := domain.BookElement{ Name: "Note", ElementName: "element-note", Icon: "speaker-notes" }
-    meetingElement := domain.BookElement{ Name: "Meeting", ElementName: "element-meeting", Icon: "social:people" }
-    sketchElement := domain.BookElement{ Name: "Sketch", ElementName: "element-sketch", Icon: "gesture" }
-    speakerElement := domain.BookElement{ Name: "Speaker note", ElementName: "element-speaker", Icon: "communication:forum" }
-    //testElement := domain.BookElement{ Name: "Test", ElementName: "element-test", Icon: "bug-report" }
-    
-    bookElements := []domain.BookElement{ toDoElement, noteElement, meetingElement, sketchElement, speakerElement } //, testElement}
-    
-    
-    return bookElements, nil
+	toDoElement := domain.BookElement{Name: "To-do", ElementName: "element-to-do", Icon: "check-box"}
+	noteElement := domain.BookElement{Name: "Note", ElementName: "element-note", Icon: "speaker-notes"}
+	meetingElement := domain.BookElement{Name: "Meeting", ElementName: "element-meeting", Icon: "social:people"}
+	sketchElement := domain.BookElement{Name: "Sketch", ElementName: "element-sketch", Icon: "gesture"}
+	speakerElement := domain.BookElement{Name: "Speaker note", ElementName: "element-speaker", Icon: "communication:forum"}
+	//testElement := domain.BookElement{ Name: "Test", ElementName: "element-test", Icon: "bug-report" }
+
+	bookElements := []domain.BookElement{toDoElement, noteElement, meetingElement, sketchElement, speakerElement} //, testElement}
+
+	return bookElements, nil
 }

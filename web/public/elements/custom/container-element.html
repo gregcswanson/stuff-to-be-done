@@ -226,9 +226,20 @@
         this.$.insertion.appendChild(el);
           el.addEventListener("element-changed", function (ev) {
           //console.log('element-changed fired', ev.detail);
-          self.elementData = JSON.stringify(ev.detail.data);
+          var data = ev.detail.data;
+          var version = 0;
+          if (!isNaN(data.version)){
+            version = data.version;
+          }
+          data.version = version + 1;
+          self.elementData = JSON.stringify(data);
           self.isCompleted = ev.detail.isCompleted;
-          this.fire('element-updated', { taskId: self.taskId, elementData: self.elementData, isCompleted: self.isCompleted }, { bubbles: true });
+          this.fire('element-updated', 
+            { 
+              taskId: self.taskId, 
+              elementData: self.elementData, 
+              isCompleted: self.isCompleted 
+            }, { bubbles: true });
         });
 
         document.addEventListener('set-initial-focus', function (e) {
@@ -288,11 +299,6 @@
         this._showTodayChanged();
         this.canShowLater = !this.isActioned && !this.isCompleted && this.showLater;
       },
-      /*_commentChanged: function(){
-        // save the commment
-        console.log('save comment', this.commentText);
-        this.$.appApi.saveComment(this.dayId, this.taskId, this.commentText);
-      },*/
       _toggleActions: function () {
         this.showActions = !this.showActions;
         if (this.showActions) {
@@ -324,8 +330,16 @@
         if (this.$.el) {
           if (this.elementData.length > 0){
             var data = JSON.parse(this.elementData);
+            var newVersion = 0;
+            if (!isNaN(data.version)){
+              newVersion = data.version;
+            }
+            var oldVersion = 0;
+            if (!isNaN(this.$.el.elementData.version)){
+              oldVersion = this.$.el.elementData.version;
+            }
             //console.log('container-element data changed', data);
-            if (this.$.el.elementData !== data) {
+            if (newVersion > oldVersion) { //this.$.el.elementData !== data) {
               this.$.el.elementData = data;
             }
           }
