@@ -226,7 +226,10 @@
                     </paper-button>
                 </div>
             </div>
-            <sub-items x-items="{{elementData.items}}" is-read-only="{{isCompletedView}}"></sub-items>
+            <sub-items 
+                items="{{elementData.items}}" 
+                is-read-only="{{isCompletedView}}"
+                on-sub-items-changed="_onSubItemsChanged"></sub-items>
         </div>
     </template>
     <script>
@@ -236,7 +239,7 @@
                 elementData: {
                     type: Object,
                     value: function () {
-                        return { text: '', title: '', subTitle: '', status: 'OPEN' }
+                        return { text: '', title: '', subTitle: '', status: 'OPEN', items: [] }
                     },
                     observer: 'elementDataChanged',
                 },
@@ -296,6 +299,10 @@
             _save: function () {
                 var result = { data: this.elementData, isCompleted: this.isCompleted };
                 this.fire('element-changed', result, { bubbles: true });
+            },
+            _onSubItemsChanged: function(event) {
+                this.isDirty = false;
+                this._save();
             },
         });
     </script>

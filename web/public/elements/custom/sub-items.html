@@ -95,8 +95,9 @@
                 items: {
                     type: Array,
                     value: function() {
-                        return [{"isComplete": true, "text": 'test1'},
-                        {"isComplete": false, "text": 'test1'}];
+                        //return [{"isComplete": true, "text": 'test1'},
+                        //{"isComplete": false, "text": 'test1'}];
+                        return [];
                     },
                     notify: true,
                     observer: '_itemsChanged',
@@ -107,22 +108,32 @@
                     observer: '_isReadOnlyChanged',
                 }
             },
+            ready: function () {
+                this._checkEmptyRow(true);
+            },
             _itemsChanged: function(){
+                if (typeof(this.items) === 'undefined' || this.items == null){
+                    this.items = [];
+                }
                 console.log('sub-items -> _itemsChanged', this.items);
                 this._checkEmptyRow(true);
             },
             _isReadOnlyChanged: function(){
+                if (typeof(this.items) === 'undefined') return;
                 this._checkEmptyRow(true);
             },
             _blur: function() {
                 this._checkEmptyRow(true);
+                console.log('_blur');
                 this._itemsUpdated();
             },
             _textChanged: function() {
-                console.log('sub-items -> text-changed')
                 this._checkEmptyRow(false);
             },
             _checkEmptyRow: function(removeBlanks) {
+                if (typeof(this.items) === 'undefined' || this.items == null){
+                    this.items = [];
+                }
                 // remove any blank rows only if requested (on blur, not change)
                 if (removeBlanks)
                 {
@@ -145,6 +156,7 @@
                 console.log('_toggleState', e);
                 var item = e.model.item;
                 this.set("items." + this.items.indexOf(item) + ".isComplete", !item.isComplete);
+                this._itemsUpdated();
             },
             _extract: function(e) {
                 var item = e.model.item;
@@ -154,7 +166,8 @@
                 // send the text to a new record
             },
             _itemsUpdated: function(){
-                this.fire('items-changed', this.items, { bubbles: true });
+                console.log('_onItemsChanged');
+                this.fire('sub-items-changed', this.items, { bubbles: true });
             }
         });
     </script>
