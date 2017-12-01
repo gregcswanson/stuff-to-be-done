@@ -14,9 +14,9 @@
                 position: relative;
                 padding: 4px;
                 background-color: var(--disabled-text-color, black);
-                border-top-right-radius: 5px;
-                border-bottom-right-radius: 5px;
-                border-bottom-left-radius: 5px;
+                border-top-right-radius: 0px;
+                border-bottom-right-radius: 0px;
+                border-bottom-left-radius: 0px;
             }
 
             .bubble>input , .bubble>textarea {
@@ -32,6 +32,15 @@
                 font-size: 14px;
                 color: white;
                     line-height: 16px;
+            }
+
+            p.readonly {
+                font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
+                    font-style: italic;
+                    font-size: 14px;
+                    color: white;
+                    line-height: 16px;
+                    margin: 2px;
             }
             paper-textarea {
                 --paper-input-container-input: {
@@ -61,11 +70,12 @@
             }
         </style>
         <!-- bubble -->
-        <div class="bubble tri-right left-top">
-             <paper-textarea id="commentext" hidden$="{{!showComment}}" placeholder="Add a comment for this day..."
+        <div class="bubble tri-right left-top" hidden$="{{!showComment}}">
+             <paper-textarea id="commentext" hidden$="{{isReadonly}}" placeholder="Add a comment for this day..."
                 value="{{comment}}"
                 on-blur="_commentChanged" no-label-float>
             </paper-textarea>
+            <p class="readonly" hidden$="{{!isReadonly}}">[[comment]]</p>
         </div>
         <!-- api -->
         <app-api id="appApi" book-id="[[bookId]]"></app-api>
@@ -85,6 +95,9 @@
                 taskId: {
                     type: String,
                     value: '',
+                },
+                isReadonly:{
+                    type: Boolean
                 },
                 comment: {
                     type: String,

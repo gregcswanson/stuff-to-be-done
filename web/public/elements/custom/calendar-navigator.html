@@ -1,4 +1,6 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<!--<link rel="import" href="../../../bower_components/app-datepicker/app-datepicker.html"> -->
+<link rel="import" href="./date-behavior.html">
 <dom-module id="calendar-navigator">
   <template>
     <style include="app-theme">
@@ -7,34 +9,131 @@
       }
       
       div.container {
-        background-color: #666;
-        opacity: 0.5;
-        border-radius: 3px;
+        x-background-color: #666;
+        x-opacity: 0.5;
+        x-border-radius: 3px;
         padding: 3px;
+        x-display: flex;
+        x-align-items: center;
+        display: block;
+        x-width: 100%;
+        text-align: center;
+      }
+
+      p.current-day {
+        display: inline-block;
+        text-align: center;
+        color: #333;
+        font-size: 12px;
+        x-flex: 1;
+        margin: 10px 0 0 0;
+        min-width: 200px;
+      } 
+
+      .date-selector {
+        text-align: center;
+        padding: 10px;
+      }
+
+      paper-material {
+        margin: 3px 3px;
+        display: inline-block;
+        background-color: white;
+      }
+
+
+      paper-button {
+        min-width: 24px;
+        color: #333 !important;
+        font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
+        padding: 0 3px;
+      }
+
+      div.container > paper-button, .item-container > button, .item-container > p {
+          display: inline-block; /* To avoid layout issues for inline elements with the order property in IE 10 */
       }
 
     </style>
     <div class="container">
-      <button class="back">previous</button>
+
+      <!--<paper-button class="today"></paper-button> -->
+      <paper-button class="back" on-tap="_previous">&lt;&lt;</paper-button>
       <!-- calendaer selector -->
-      <button class="next">next</button>
+      <p class="current-day" on-tap="_toggleCalendar">
+        <moment-js date="[[dayAsString]]" date-format="YYYYMMDD" format="dddd Do MMMM, YYYY"></moment-js>
+      </p>
+      <paper-button class="next" on-tap="_next">&gt;&gt;</paper-button>
+     <!-- <paper-button class="calendar" on-tap="_toggleCalendar"><iron-icon icon="today"></iron-icon></paper-button>
+     -->
     </div>
-    
+    <div class="date-selector" hidden$="[[hideCalendar]]">
+      <paper-material elevation="1">
+        <calendar-container date="[[date]]" on-calendar-date-change="_onDateValueChanged"></calendar-container>
+      </paper-material>
+    </div>
   </template>
   <script>
     Polymer({
       is: 'calendar-navigator',
+      behaviors: [ DateBehavior ],
       properties: {
+        dayAsString: {
+          type: String,
+          value: function(){
+            return this._dateToInt(new Date()).toString();
+          },
+          observer: '_onDayAsStringChanged',
+          notify: true
+        },
         date: {
           type: Date,
           value: function () {
             var date = new Date();
             return date;
-          }
+          },
+          observer: '_onDateValueChanged',
         },
+        hideCalendar: {
+          type: Boolean,
+          value: true,
+        }
       },
       ready: function () {
         
+      },
+      _toggleCalendar: function(){
+        //this.hideCalendar = !this.hideCalendar;
+      },
+      _onDayAsStringChanged: function(){
+        var oldDateAsString = this._dateToInt(this.date).toString();
+        if (oldDateAsString != this.dayAsString) {
+          this.date = this._dateIntToDate(this.dayAsString);
+        }
+      },
+      _dateChanged: function (e) {
+        console.log('dateChanged', e);
+          var newDate = new Date(e.detail.value);
+          var newDayAsString = this._dateToInt(newDate).toString();
+          if (newDayAsString != this.dayAsString) {
+            this.dayAsString = newDayAsString;
+          }
+      },
+      _onDateValueChanged: function(e){
+        console.log('_onDateValueChanged', e);
+        var newDate = new Date(e.detail);
+        var newDateAsString = this._dateToInt(newDate).toString();
+        if (newDateAsString != this.dayAsString){
+          //this.date = newDate;
+          //this.dayAsString = newDateAsString;
+        }
+      },
+      _next: function(){
+        this.date = this._dateAddDays(this.date, 1);
+        this.dayAsString = this._dateToInt(this.date).toString();
+      },
+      _previous: function(){
+        this.date = this._dateAddDays(this.date, -1);
+        this.dayAsString = this._dateToInt(this.date).toString();
       },
       
     });

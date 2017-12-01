@@ -42,19 +42,21 @@
       }
     </style>
 
-    <loading-indicator is-loading="{{isLoading}}" message="previous days"></loading-indicator>
-    <!-- items grouped by day -->
-    <div hidden$="{{isLoading}}">
-      <div hidden$="{{isEmpty}}">
-        <!-- <p class="previous-days">Open items on previous days</p> -->
-        <template is="dom-repeat" items="{{days}}">
-          <moment-js date="[[item.Display]]" date-format="YYYYMMDD" format="dddd Do MMMM, YYYY"></moment-js>
-          <paper-material elevation="1" hidden$="{{isEmpty}}">
-            <task-items book-id="[[bookId]]" dayAsString="[[item.Display]]" open-only show-later on-item-removed="_taskItemsItemRemoved"
-              items="[[item.DayTasks]]"></task-items>
-          </paper-material>
-        </template>
+    <div hidden$="{{isError}}">
+      <loading-indicator is-loading="{{isLoading}}" message="previous days"></loading-indicator>
+      <!-- items grouped by day -->
+      <div hidden$="{{isLoading}}">
+        <div hidden$="{{isEmpty}}">
+          <!-- <p class="previous-days">Open items on previous days</p> -->
+          <template is="dom-repeat" items="{{days}}">
+            <moment-js date="[[item.Display]]" date-format="YYYYMMDD" format="dddd Do MMMM, YYYY"></moment-js>
+            <paper-material elevation="1" hidden$="{{isEmpty}}">
+              <task-items book-id="[[bookId]]" dayAsString="[[item.Display]]" open-only show-later on-item-removed="_taskItemsItemRemoved"
+                items="[[item.DayTasks]]"></task-items>
+            </paper-material>
+          </template>
 
+        </div>
       </div>
     </div>
     <failed-retry-button is-error="{{isError}}" on-retry="_reload"></failed-retry-button>

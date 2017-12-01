@@ -70,7 +70,7 @@
                             <paper-textarea id="notetext" type="text" placeholder="Notes and action items..." 
                                 value="{{item.text::input}}" on-keydown="_textChanged"
                                 on-blur="_blur" no-label-float></paper-textarea>
-                                <paper-button on-tap="_extract" class="extract">
+                                <paper-button on-tap="_extract" class="extract" hidden$="{{_hideExtract(item)}}">
                                     <iron-icon icon="launch"></iron-icon>
                                 </paper-button>
                 </div>
@@ -164,6 +164,10 @@
                     this.set("items." + this.items.indexOf(item) + ".isComplete", !item.isComplete);
                 }
                 // send the text to a new record
+            },
+            
+            _hideExtract: function(item){
+                return item.text.length === 0;
             },
             _itemsUpdated: function(){
                 console.log('_onItemsChanged');

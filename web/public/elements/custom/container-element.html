@@ -94,7 +94,9 @@
     </paper-button>
 
     <!-- comments -->
-    <task-comment book-id="[[bookId]]" task-id="[[taskId]]" day-id="[[dayId]]" comment="{{commentText}}" hidden$="{{!showComment}}"></task-comment>
+    <task-comment book-id="[[bookId]]" task-id="[[taskId]]" day-id="[[dayId]]"
+    is-readonly="[[isCompleted]]"
+     comment="{{commentText}}" hidden$="{{!showComment}}"></task-comment>
    
     <!-- actions -->
     <iron-overlay-backdrop id="backdrop" on-tap="_toggleActions"></iron-overlay-backdrop>

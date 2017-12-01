@@ -1,0 +1,52 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="./date-behavior.html">
+<dom-module id="calendar-container">
+  <template>
+    <style include="app-theme">
+       :host {
+        display: block;
+      }
+
+      .date-selector {
+        text-align: center;
+        padding: 10px;
+      }
+
+      paper-material {
+        margin: 3px 3px;
+        display: inline-block;
+        background-color: white;
+      }
+
+
+    </style>
+    <app-datepicker date="{{date}}" auto-update-date on-date-changed="_onDateValueChanged"></app-datepicker>
+  </template>
+  <script>
+    Polymer({
+      is: 'calendar-container',
+      behaviors: [ DateBehavior ],
+      properties: {
+        date: {
+          type: Date,
+          /* value: function () {
+            var date = new Date();
+            return date;
+          },*/
+          //observer: '_onDateValueChanged',
+          notify: false,
+        }
+      },
+      ready: function () {
+        
+      },
+      _onDateValueChanged: function(e){
+        var newDate = new Date(e.detail.value);
+        //if (this.date && this._dateToInt(newDate) != this._dateToInt(this.date)){
+          this.fire('calendar-date-change', newDate);
+        //}
+      },
+      
+    });
+  </script>
+</dom-module>
