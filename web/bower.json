@@ -23,7 +23,6 @@
     "iron-location": "PolymerElements/iron-location#^2.0.2",
     "app-datepicker": "motss/app-datepicker#^2.9.0",
     "granite-ink": "LostInBrittany/granite-ink#^0.2.0",
-    "paper-progress": "PolymerElements/paper-progress#^2.0.1",
-    "datetime-picker": "fooloomanzoo/datetime-picker#^2.5.4"
+    "paper-progress": "PolymerElements/paper-progress#^2.0.1"
   }
 }
