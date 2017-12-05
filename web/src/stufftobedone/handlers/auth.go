@@ -18,3 +18,16 @@ func LogoutHandler(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/")
 	}
 }
+
+
+func AuthenticateHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"data": "Not implemented",
+	})
+}
+
+func AuthorizedHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"token": "Not implemented",
+	})
+}

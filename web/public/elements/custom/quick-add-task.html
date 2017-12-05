@@ -1,0 +1,43 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<dom-module id="quick-add-task">
+    <template include="app-theme">
+        <style>
+             :host {
+                display: block;
+                position: relative;
+            }
+
+            .container {
+                display: block;
+                padding: 3px;
+            }
+
+        </style>
+        <div class="container">
+            <p>
+                text input
+                submit button
+                key down with return focus to control
+                clear after submit
+                after submit reload today
+                finalised note type with entered text
+            </p>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'quick-add-task',
+            properties: {
+                text:{
+                    type: String,
+                    value: '',
+                }
+            },
+            ready: function () {
+                
+            },
+            
+            
+        });
+    </script>
+</dom-module>

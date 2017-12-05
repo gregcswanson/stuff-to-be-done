@@ -26,3 +26,9 @@ func ProfileIndexsHandler(c *gin.Context) {
 	//  "bookID": defaultBook.ID,
 	//})
 }
+
+func ProfileApiHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"data": "Not implemented",
+	})
+}

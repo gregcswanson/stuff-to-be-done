@@ -13,6 +13,10 @@ npm install -g vulcanize
 
 be aware of 64bit visual studio code running python causing issues with deployment
 
+windows can have an issue with the gopath if it has a trailing ;
+https://github.com/golang/go/issues/21928
+
+
 ##run
 goapp serve
 goapp serve web\
@@ -25,7 +29,7 @@ gofmt -w web
 
 ##set go path [this should be done in the system environment]
 set GOPATH=C:\Work;C:\Users\Gregory Swanson\Documents\GitHub\stuff-to-be-done\web
-https://github.com/golang/go/wiki/Setting-GOPATH#windows
+
 [NO] go get github.com/gin-gonic
 go get github.com/gin-gonic/gin
 export GOPATH=/work;/gae/web

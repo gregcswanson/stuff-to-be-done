@@ -15,15 +15,24 @@ func init() {
 	r.Use(middleware.UserMiddleware())
 	r.NoRoute(handlers.FourZeroFourHandler)
 
-	apiV1internal := r.Group("api/v1/internal")
+	
+	r.GET("/authenticate", handlers.AuthenticateHandler) 
+	r.GET("/authorized", handlers.AuthorizedHandler) 
+	r.GET("/api/v1/internal/register", handlers.RegisterHandler) 
+	r.GET("/api/v1/internal/ping", handlers.PingHandler) 
+	/*
+	apiV1internal := r.Group("/api/v1/internal")
 	{
 		// TO DO - set a custom shared variable using middleware so that the 404 returns an api error
 		apiV1internal.POST("/register", handlers.RegisterHandler)
-		apiV1internal.GET("/ping", handlers.PingHandler)
-	}
+		//apiV1internal.GET("/ping", handlers.PingHandler)
+		apiV1internal.GET("/auth", handlers.ProfileApiHandler)
+		
+	}*/
 
-	apiV1book := r.Group("api/v1/book/:bookId")
+	apiV1book := r.Group("/api/v1/book/:bookId")
 	{
+		
 		// add a middleware to setup the book context
 		apiV1book.GET("/elements", handlers.BookElementsHandler)
 		// later actions
@@ -33,6 +42,9 @@ func init() {
 		// trash handlers
 		apiV1book.GET("/trash", handlers.ApiTrashGetHandler) // get trash items
 		apiV1book.DELETE("/trash", handlers.ApiTrashEmptyHandler)
+
+		// active handlers, passing today
+		apiV1book.GET("/active/:dayAsString", handlers.ApiActiveHandler)
 
 		// day handlers
 		apiV1book.GET("/day/:dayAsString", handlers.ApiDayHander)
@@ -50,8 +62,9 @@ func init() {
 
 	}
 
-	r.GET("app/book", handlers.BookIndexsHandler) // will redirect to the default book for the user
-	book := r.Group("app/book/:book")
+	
+	r.GET("/app/book", handlers.BookIndexsHandler) // will redirect to the default book for the user
+	book := r.Group("/app/book/:book")
 	{
 		book.GET("/live", handlers.BookLiveHander) // will replace the sub pages
 		book.GET("/trash", handlers.TrashHandler)
@@ -59,7 +72,7 @@ func init() {
 		book.GET("/history", handlers.HistoryHandler)
 	}
 
-	appProfile := r.Group("profile")
+	appProfile := r.Group("/profile")
 	{
 		appProfile.GET("/", handlers.ProfileIndexsHandler)
 	}
