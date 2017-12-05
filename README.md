@@ -4,6 +4,18 @@ framework for doing stuff
 ##CloudShell (from app engine)
 https://cloud.google.com/shell/docs/quickstart
 http://www.ryanday.net/2012/10/01/installing-go-and-gopath/
+###Update the .bashrc
+```
+cd $HOME
+vi ./.bashrc
+G (move to last line of file)
+o (open a new line after)
+export GOROOT $HOME/work
+export PATH=$PATH:$GOROOT/bin
+export GOPATH=$GOPATH:$HOME/stuff-to-be-done/web
+[ESC]
+:X (quit and save changes)
+```
 
 ##Setup
 Install GO environment for App Engine
