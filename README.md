@@ -1,6 +1,22 @@
 # stuff-to-be-done
 framework for doing stuff
 
+##CloudShell (from app engine)
+https://cloud.google.com/shell/docs/quickstart
+http://www.ryanday.net/2012/10/01/installing-go-and-gopath/
+###Update the .bashrc
+```
+cd $HOME
+vi ./.bashrc
+G (move to last line of file)
+o (open a new line after)
+export GOROOT $HOME/work
+export PATH=$PATH:$GOROOT/bin
+export GOPATH=$GOPATH:$HOME/stuff-to-be-done/web
+[ESC]
+:X (quit and save changes)
+```
+
 ##Setup
 Install GO environment for App Engine
 https://cloud.google.com/go/quickstarts
@@ -9,6 +25,8 @@ Install Node
 Install Bower (replace later with webpack)
 bower install in the web folder
 npm install -g vulcanize
+on cloudshell
+sudo -i npm install -g vulcanize
 ? gcloud components install kubectl
 
 be aware of 64bit visual studio code running python causing issues with deployment
@@ -32,6 +50,7 @@ set GOPATH=C:\Work;C:\Users\Gregory Swanson\Documents\GitHub\stuff-to-be-done\we
 
 [NO] go get github.com/gin-gonic
 go get github.com/gin-gonic/gin
+sudo -i go get github.com/gin-gonic/gin
 export GOPATH=/work;/gae/web
 export GOPATH="/home/ubuntu/workspace/work:/home/ubuntu/workspace/jdt/web"
 
