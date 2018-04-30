@@ -25,6 +25,13 @@ indexes:
   ancestor: yes
   properties:
   - name: DateAsInt
+  - name: Created
+    direction: desc
+
+- kind: Days
+  ancestor: yes
+  properties:
+  - name: DateAsInt
   - name: IsActioned
   - name: Created
 
@@ -56,6 +63,16 @@ indexes:
   - name: DateAsInt
     direction: desc
   - name: Created
+
+- kind: Days
+  ancestor: yes
+  properties:
+  - name: IsActioned
+  - name: IsCompleted
+  - name: DateAsInt
+    direction: desc
+  - name: Created
+    direction: desc
 
 - kind: Tasks
   ancestor: yes

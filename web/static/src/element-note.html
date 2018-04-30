@@ -1,0 +1,36 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="element-note">
+  <template>
+    <style include="shared-style">
+      :host {
+        display: block;
+      }
+      
+      p {
+        margin: 0;
+        padding: 6px;
+      }
+    </style>
+
+    <p>[[dayTask.ElementName]]</p>
+
+  </template>
+
+  <script>
+    class ElementNote extends Polymer.Element {
+      static get is() { return 'element-note'; }
+
+      static get properties() {
+        return {
+          dayTask: {
+            type: Object,
+          },
+        };
+      }
+    }
+
+    window.customElements.define(ElementNote.is, ElementNote);
+  </script>
+</dom-module>

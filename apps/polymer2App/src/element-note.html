@@ -1,0 +1,102 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="my-icons.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="element-note">
+  <template>
+    <style include="shared-style">
+      :host {
+        display: block;
+        position: relative;
+        color: darkslategray;
+        padding: 0;
+      }
+      
+      div.to-do-container {
+        width: 100%;
+        position: relative;
+        display: block;
+    }
+
+      p {
+        padding: 11px 0;
+        display: block;
+        white-space: pre-line;
+        margin: 0 0px 0 40px;
+        color: #999;
+        overflow-wrap: break-word;
+    }
+    </style>
+
+<div hidden$="[[!dayTask.IsActioned]]">
+    <p>{{dayTask.Details.text}}</p>
+</div>
+<div hidden$="[[dayTask.IsActioned]]">
+  <div hidden$="{{!dayTask.IsCompleted}}">
+    <p on-tap="_unlock">{{dayTask.Details.text}}</p>
+  </div>
+  <div hidden$="{{dayTask.IsCompleted}}">
+      <paper-button on-tap="_lock">
+          <iron-icon icon="my-icons:speaker-notes"></iron-icon>
+      </paper-button>
+    <paper-textarea id="notetext" type="text" placeholder="Type a note, toggle the pencil to lock it..."
+       value="{{dayTask.Details.text::input}}" on-change="_textChanged"
+      on-blur="_blur" no-label-float></paper-textarea>
+  </div>
+</div>
+
+  </template>
+
+  <script>
+    class ElementNote extends Polymer.Element {
+      static get is() { return 'element-note'; }
+
+      // MOVE ALL THIS TO A BASE CLASS
+      static get properties() {
+        return {
+          dayTask: {
+            type: Object,
+          },
+        };
+      }
+      
+      connectedCallback() {
+        this.saveSequence = 0;
+        super.connectedCallback();
+      }
+      _unlock(){
+        this.set('dayTask.IsCompleted', false);
+        this._saveAfterDelay();
+      }
+      _lock(){
+        this.set('dayTask.IsCompleted', true);
+        this._saveAfterDelay();
+      }
+      _blur(){
+        this._saveAfterDelay();
+      }
+      _saveAfterDelay(){
+        // wait 2 seconds then save, or cancel previous delay
+        this.saveSequence++;
+        var s = this.saveSequence;
+        var self = this;
+        setTimeout(function(){
+          self._save(s, self);
+        }, 1000);
+      }
+      _save(sequence, self) {
+        if (sequence == self.saveSequence){
+          console.log('save');
+          self.dispatchEvent(new CustomEvent('save-day-task', {detail: self.dayTask}));
+        }
+      }
+    }
+
+    window.customElements.define(ElementNote.is, ElementNote);
+  </script>
+</dom-module>

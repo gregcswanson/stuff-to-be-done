@@ -1,13 +1,14 @@
 package repositories
 
 import (
-	"appengine"
-	"appengine/datastore"
 	"log"
 	"net/http"
 	"strconv"
 	"stufftobedone/domain"
 	"time"
+
+	"appengine"
+	"appengine/datastore"
 )
 
 type TaskRepository struct {
@@ -180,7 +181,8 @@ func (r *TaskRepository) FindById(bookID string, taskID string) (domain.Task, er
 	return task, err
 }
 
-func (r *TaskRepository) Create(elementName string, bookID string, dayAsInt int, projectID string, userID string) (domain.Task, error) {
+/*Create ... */
+func (r *TaskRepository) Create(elementName string, bookID string, dayAsInt int, projectID string, userID string, data string, isCompleted bool) (domain.Task, error) {
 	// clear the count cache
 	r.cache.Clear("latercount", bookID)
 
@@ -188,7 +190,7 @@ func (r *TaskRepository) Create(elementName string, bookID string, dayAsInt int,
 
 	// to-do if the day is not null add to the day reference table also
 	// to-do convert to UTC now
-	task := domain.Task{ID: "", BookID: bookID, Data: "", ElementName: elementName, ProjectID: projectID, IsCompleted: false, CurrentDate: dayAsInt, Created: time.Now(), CreatedBy: userID, Updated: time.Now(), UpdatedBy: userID}
+	task := domain.Task{ID: "", BookID: bookID, Data: data, ElementName: elementName, ProjectID: projectID, IsCompleted: isCompleted, CurrentDate: dayAsInt, Created: time.Now(), CreatedBy: userID, Updated: time.Now(), UpdatedBy: userID}
 	task.DueDateAsInt = 99999999
 	task.Sort, _ = strconv.Atoi(task.Created.Format("20060102150405"))
 	globalContext := appengine.NewContext(r.request)

@@ -9,11 +9,12 @@
 package repositories
 
 import (
-	"appengine"
-	"appengine/datastore"
 	"log"
 	"net/http"
 	"stufftobedone/domain"
+
+	"appengine"
+	"appengine/datastore"
 )
 
 type BookRepository struct {
@@ -66,6 +67,24 @@ func (r *BookRepository) GetDefault(user domain.AppUser) (domain.Book, error) {
 	// create the default book
 	log.Println("Creating the default book")
 	return r.Create(user, "Stuff to do")
+}
+
+/*ValidateAccess ... */
+func (r *BookRepository) ValidateAccess(bookID string, userID string) (bool, error) {
+	var bookUsers []domain.BookUser
+
+	// find the default book for this user
+	globalContext := appengine.NewContext(r.request)
+	q := datastore.NewQuery("BookUsers").Filter("UserID =", userID).Filter("BookID =", bookID)
+	_, err := q.GetAll(globalContext, &bookUsers)
+
+	if err != nil {
+		return false, err
+	} else if len(bookUsers) > 0 {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func (r *BookRepository) ProcessPendingInvitations(user domain.AppUser) error {

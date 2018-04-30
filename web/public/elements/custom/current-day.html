@@ -52,7 +52,7 @@
         },
       },
       ready: function(){
-          var date = this._dateToInt(new Date());
+        var date = this._dateToInt(new Date());
         this.dayAsString = date.toString();
         this.dayAndTimeAsString = new Date().toString();
         this.interval - setInterval(this._onInterval.bind(this), 3000);

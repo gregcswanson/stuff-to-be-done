@@ -25,9 +25,11 @@ _testmain.go
 appengine-generated/
 web/appengine-generated/
 
-
+build/
 bower_components/
 web/bower_components/
+apps/reactApp/bower_components/
+apps/polymer2App/bower_components/
 
 # Logs
 logs
@@ -41,6 +43,8 @@ npm-debug.log*
 node_modules
 jspm_packages
 web/node_modules
+apps/polymer2App/node_modules
+apps/reactApp/node_modules
 
 # Optional npm cache directory
 .npm

@@ -1,0 +1,122 @@
+<script>
+
+const mockAPI = {};
+mockAPI.getLater = function() {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(Object.assign([], dataSample.data));
+        }, 3000);
+    });
+};
+
+mockAPI.getActive = function() {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(Object.assign([], dataSample.data));
+        }, 1000);
+    });
+};
+
+mockAPI.createElement = function(elementName, selectedDayAsInt){
+    return new Promise((resolve, reject) => { 
+        resolve({
+            "DayID":"",
+            "TaskID":"",
+            "TemporaryID": "?",
+            "BookID":"",
+            "Details": {
+                "text":"",
+                "status":"OPEN",
+                "version":1
+            },
+            "ElementName": elementName,
+            "ProjectID":"",
+            "Search":"",
+            "DateAsInt": selectedDayAsInt,
+            "IsCompleted":false,
+            "IsActioned":false,
+            "Created":"2017-11-13T22:22:05.026282Z",
+            "CanReopen":false,
+            "Tags":"",
+            "Comment":""
+        });  
+    });
+};
+
+var dataSample = {
+    "data":
+        [{
+            "DateAsInt":20171114,
+            "Display":"20171114",
+            "DayTasks":[
+                {
+                    "DayID":"a",
+                    "TaskID":"a1",
+                    "BookID":"b",
+                    "Details": {
+                        "text":"Plan and scope next front end platform",
+                        "status":"OPEN",
+                        "version":1
+                    },
+                    "ElementName":"element-to-do",
+                    "ProjectID":"",
+                    "Search":"",
+                    "DateAsInt":20171114,
+                    "IsCompleted":false,
+                    "IsActioned":false,
+                    "Created":"2017-11-13T22:22:05.026282Z",
+                    "CanReopen":false,
+                    "Tags":"",
+                    "Comment":"Added Yammer post, started word document"
+                    }
+                ]
+            },
+            {
+                "DateAsInt":20171113,
+                "Display":"20171113",
+                "DayTasks":[
+                    {
+                        "DayID":"b",
+                        "TaskID":"b1",
+                        "BookID":"b",
+                        "Details": {
+                            "text": "Scoping document for forecasting",
+                            "status":"OPEN",
+                            "version":3
+                        },
+                        "ElementName":"element-to-do",
+                        "ProjectID":"",
+                        "Search":"",
+                        "DateAsInt":20171113,
+                        "IsCompleted":false,
+                        "IsActioned":true,
+                        "Created":"2017-11-13T00:41:04.191479Z",
+                        "CanReopen":false,
+                        "Tags":"",
+                        "Comment":""
+                    },
+                    {
+                        "DayID":"n",
+                        "TaskID":"n1",
+                        "BookID":"b",
+                        "Details": {
+                            "text": "A note",
+                            "status":"OPEN",
+                            "version":3
+                        },
+                        "ElementName":"element-note",
+                        "ProjectID":"",
+                        "Search":"",
+                        "DateAsInt":20171113,
+                        "IsCompleted":false,
+                        "IsActioned":true,
+                        "Created":"2017-11-13T00:50:04.191479Z",
+                        "CanReopen":false,
+                        "Tags":"",
+                        "Comment":""
+                    }
+                ]
+            }    
+        ]
+    };
+</script>

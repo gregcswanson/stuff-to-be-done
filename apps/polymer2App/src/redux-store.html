@@ -1,0 +1,331 @@
+<link rel="import" href="../bower_components/polymer-redux/polymer-redux.html">
+<link rel="import" href="date-functions.html">
+<script>
+    const initialState = {
+        profile: {},
+        bookID: 'book id',
+        books: [{id: "1", name: "default", isSelected: true, isDefault: true}],
+        isLoggingIn: false,
+        isLoggedIn: false,
+        isLoading: false,
+        isInitilazing: true,
+        todayAsInt: 0,
+        selectedDayAsInt: 0,
+        laterItemsCount: 0,
+        offline: [],
+        active: [],
+        day: [],
+        trash: [],
+        later: [],
+        historyDayAsInt: 0,
+        tokens: {}
+    };
+    
+    const reducer = (state, action) => {
+        if (!state) {
+            var newState = initialState;
+            newState.selectedDayAsInt = dateFunctions.todayAsInt();
+
+            // get from local storage or default new
+            if (typeof(Storage) !== "undefined") {
+                var storedState = localStorage.getItem("storedstate");
+                if (storedState && storedState.length > 0){
+                    newState = JSON.parse(storedState);
+                    console.log('restored state', newState);
+                }
+            }
+            // if online then check the keys
+            // set some defaults
+            newState.todayAsInt = dateFunctions.todayAsInt();
+            newState.selectedDayAsInt = dateFunctions.todayAsInt();
+
+            // start any timers
+            
+            return newState;
+        }
+        switch(action.type){
+            case 'ADD_ELEMENT':
+                var items = [...state.items];
+                // find the current day, or add it
+                var day = items.find(function (f) { return f.DateAsInt == action.item.DateAsInt });
+                if (!day) {
+                    day = { DateAsInt: action.item.DateAsInt, Display: action.item.DateAsInt.toString(), DayTasks: []}
+                    items.splice(0, 0, day);
+                }
+                day.DayTasks.splice(0,0, action.item);
+                var newItems = JSON.parse(JSON.stringify(items));
+                return Object.assign({}, state, { items: newItems });
+            case 'ADD_ELEMENT_TO_ACTIVE':
+                var active = [...state.active];
+                // find the current day, or add it
+                var day = active.find(function (f) { return f.DateAsInt == action.item.DateAsInt });
+                if (!day) {
+                    day = { DateAsInt: action.item.DateAsInt, Display: action.item.DateAsInt.toString(), DayTasks: []}
+                    active.splice(0, 0, day);
+                }
+                day.DayTasks.splice(0,0, action.item);
+                var newItems = JSON.parse(JSON.stringify(active));
+                return Object.assign({}, state, { active: newItems });
+            case 'ADD_ELEMENT_TO_DAY':
+                var selectedDay = [...state.day];
+                // find the current day, or add it
+                var day = selectedDay.find(function (f) { return f.DateAsInt == action.item.DateAsInt });
+                if (!day) {
+                    day = { DateAsInt: action.item.DateAsInt, Display: action.item.DateAsInt.toString(), DayTasks: []}
+                    selectedDay.splice(0, 0, day);
+                }
+                day.DayTasks.splice(0,0, action.item);
+                var newItems = JSON.parse(JSON.stringify(selectedDay));
+                return Object.assign({}, state, { day: newItems });
+            case 'ADD_OFFLINE':
+                var offline = [];
+                if(state.offline) {
+                    offline = [...state.offline];
+                } 
+                offline.splice(0,0, action.item);
+                return Object.assign({}, state, { offline:  JSON.parse(JSON.stringify(offline)) });
+            case 'LOAD_ACTIVE_COMPLETED':
+                var newState = Object.assign({}, state, { active: action.items, isLoading: false });
+                console.log(action.type, newState);
+                return newState;
+            case 'LOAD_ACTIVE_STARTED':
+                return (Object.assign({}, state, { active: [], isLoading: true }));
+            case 'LOAD_LATER_STARTED':
+                return (Object.assign({}, state, { later: [], isLoading: true }));
+            case 'LOAD_LATER_COMPLETED':
+                var newState = Object.assign({}, state, { later: action.items, isLoading: false });
+                console.log(action.type, newState);
+            case 'LOGIN_COMPLETED':
+                return (Object.assign({}, state, {isLoggingIn: false, isLoggedIn: true}));
+            case 'LOGIN_STARTED':
+                return (Object.assign({}, state, {isLoggingIn: true, isLoggedIn: false}));
+            case 'LOGOUT_SUCCESS':
+                return (Object.assign({}, state, {isLoggedIn: false, items: [], offline: [], active: [], later: []}));
+            case 'PROFILE_LOADED':
+                var newState = Object.assign({}, state, { profile: action.profile });
+                return newState;
+            case 'SELECT_DATE':
+                return Object.assign({}, state, { selectedDayAsInt: action.seletedDayAsInt });
+            case 'SET_TODAY':
+                return Object.assign({}, state, { todayAsInt: action.todayAsInt });
+            case 'SET_TOKENS': 
+                var newState = Object.assign({}, state, { tokens: action.tokens });
+                //mockAPI.tokens = action.tokens;
+                return newState;
+            case 'UPDATE_DAY_TASK':
+                var active = [...state.active];
+                var selectedDay = [...state.day];
+                // TO DO - LATER
+                // TO DO - refactor out funcions
+
+                // is this day in the active list
+                var day = active.find(function (f) { return f.DateAsInt == action.dayTask.DateAsInt });
+                if (day) {
+                    // the day exists, does the item
+                    //var task = day.DayTasks.find()
+                    
+                }
+                //day.DayTasks.splice(0,0, action.item);
+                var newActive = JSON.parse(JSON.stringify(active));
+                return Object.assign({}, state, { active: newActive });
+        }
+    };
+
+    const store = Redux.createStore(
+        reducer,
+        Redux.applyMiddleware(ReduxThunk.default)
+    );
+
+    const unsubscribe = store.subscribe(() => {
+        // store the state, maybe do this async?
+        if (typeof(Storage) !== "undefined") {
+            localStorage.setItem('storedstate', JSON.stringify(store.getState()));
+            console.log('state stored', store.getState());
+        }
+    })
+
+    const ReduxMixin = PolymerRedux(store);
+    ActionsMixin = Parent => class ActionsMixin extends ReduxMixin(Parent) {
+        static get actions() {
+            return {
+                addElement(item) {
+                    return {
+                        type: 'ADD_ELEMENT',
+                        item
+                    }
+                },
+                addElementToActive(item) {
+                    return {
+                        type: 'ADD_ELEMENT_TO_ACTIVE',
+                        item
+                    }
+                },
+                addElementToDay(item) {
+                    return {
+                        type: 'ADD_ELEMENT_TO_DAY',
+                        item
+                    }
+                },
+                addOffline(item) {
+                    return {
+                        type: 'ADD_OFFLINE',
+                        item
+                    }
+                },
+                loginStarted() {
+                    return {
+                        type: 'LOGIN_STARTED'
+                    }
+                },
+                loginCompleted() {
+                    return {
+                        type: 'LOGIN_COMPLETED'
+                    }
+                },
+                logoutCompleted() {
+                    return {
+                        type: 'LOGOUT_SUCCESS'
+                    }
+                },
+                loadLaterStarted() {
+                    return {
+                        type: 'LOAD_LATER_STARTED'
+                    }
+                },
+                loadLaterCompleted(items) {
+                    return {
+                        type: 'LOAD_LATER_COMPLETED',
+                        items
+                    }
+                },
+                loadActiveStarted() {
+                    return {
+                        type: 'LOAD_ACTIVE_STARTED',
+                    }
+                },
+                loadActiveCompleted(items) {
+                    return {
+                        type: 'LOAD_ACTIVE_COMPLETED',
+                        items
+                    }
+                },
+                profileLoaded(profile) {
+                    return {  
+                        type: 'PROFILE_LOADED',
+                        profile
+                    }
+                },
+                setTokens(tokens) {
+                    return {  
+                        type: 'SET_TOKENS',
+                        tokens
+                    }
+                },
+                updateDayTask(dayTask) {
+                    return {
+                        type: 'UPDATE_DAY_TASK',
+                        dayTask
+                    }
+                }
+            }
+        }
+        addElement(elementName, selectedDayAsInt, text, isComplete) {
+            // add it to the off line list if we are offline, otherwise add it now
+            this.dispatch((dispatch) => {
+                mockAPI.createElement(elementName, selectedDayAsInt, text).then(function(data){
+                    if (isComplete) {
+                        data.IsCompleted = true;
+                    }
+                    // save the element
+                    mockAPI.add(data).then(function(result){
+                        console.log('element added', result);
+                        // If successful, append it to the correct view
+                        result.Details = JSON.parse(result.Data);
+                        var todayAsInt = store.getState().todayAsInt;
+                        if (result.DateAsInt === todayAsInt){
+                            dispatch('addElementToActive', result);
+                        }
+                        var selectedDayAsInt = store.getState().selectedDayAsInt;
+                        if (result.DateAsInt === selectedDayAsInt){
+                            dispatch('addElementToDay', result);
+                        }
+                        if (result.IsActioned && !result.IsCompleted){
+                            dispatch('addElementToLater', result);
+                        }
+                    })
+                    .catch(function(error){
+                        console.log('add to active', error);
+                        // put the element in the offline list
+                        dispatch('addOffline', data);
+                    });
+                });
+            });
+        }
+        changeType(dayTask, elementName) {
+            // change the type of the element
+            dayTask.ElementName = elementName;
+            // do any extra processing
+            // update the instance
+            this.updateDayTask(dayTask);
+        }
+        loadActive() {
+            this.dispatch((dispatch) => {
+                dispatch('loadActiveStarted');
+                mockAPI.getActive().then(function(data){
+                    data.forEach(day => {
+                        day.DayTasks.forEach(dayTask =>{
+                            dayTask.Details = JSON.parse(dayTask.Data); 
+                        });
+                    });
+                    dispatch('loadActiveCompleted', data);
+                });
+            });
+        }
+        logout() {
+            this.dispatch((dispatch) => {
+                dispatch('setTokens', {});
+                dispatch('logoutCompleted');
+            });
+        }
+        setTokens(tokens) {
+            var self = this;
+            this.dispatch((dispatch) => {
+                dispatch('setTokens', tokens);
+                mockAPI.getProfile().then(function(data){
+                    dispatch('profileLoaded', data);
+                    dispatch('loginCompleted');
+                    self.loadActive();
+                    // load selected day
+                    // load trash
+                });
+            });
+        }
+        updateDayTask(dayTask){
+            this.dispatch((dispatch) => {
+                
+                mockAPI.update(dayTask).then(function(result){
+                        // If successful, update the views  and set isSaving to false
+                        result.Details = JSON.parse(result.Data);
+                        var todayAsInt = store.getState().todayAsInt;
+
+                        //if (result.DateAsInt === todayAsInt){
+                            // update
+                        //}
+                        if (result.DateAsInt !== todayAsInt && (result.IsActioned || result.IsCompleted)){
+                            // remove from active list
+
+                        }
+                        
+                        
+                    })
+                    .catch(function(error){
+                        console.log('update error', error);
+                    });
+            });
+
+
+        }
+    };
+    
+    
+</script>

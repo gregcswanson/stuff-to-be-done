@@ -1,0 +1,93 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="element-to-do">
+  <template>
+    <style include="shared-style">
+      :host {
+        display: block;
+        position: relative;
+        color: darkslategray;
+        padding: 0;
+    }
+    
+    div.to-do-container {
+        width: 100%;
+        position: relative;
+        display: block;
+    }
+    
+    paper-checkbox {
+        position: absolute;
+        display: block;
+        top: 11px;
+        left: 11px;
+        width: 30px;
+        height: 30px;
+    }
+    
+    p {
+        padding: 11px 0;
+        display: block;
+        white-space: pre-line;
+        margin: 0 0px 0 40px;
+        color: #999;
+        overflow-wrap: break-word;
+    }
+    
+    paper-textarea,
+    textarea {
+        display: block;
+        margin: 0 0px 0 40px;
+    }
+
+    paper-checkbox {
+        --paper-checkbox-checked-color: var(--paper-input-container-color, black);
+    }
+
+    paper-textarea {
+        --paper-input-container-input: {
+            font-family: 'Work Sans', 'Roboto', 'Noto', sans-serif;
+        }
+    }
+    </style>
+    <div hidden$="[[!dayTask.IsActioned]]">
+        <paper-checkbox name="iscompleted" checked="{{dayTask.IsCompleted}}" disabled>
+        </paper-checkbox>
+        <p>{{dayTask.Details.text}}</p>
+    </div>
+    <div hidden$="[[dayTask.IsActioned]]">
+      <div hidden$="{{!dayTask.IsCompleted}}"
+        <paper-checkbox name="iscompleted" checked="{{dayTask.IsCompleted}}" on-change="_completeChanged">
+        </paper-checkbox>
+        <p>{{dayTask.Details.text}}</p>
+      </div>
+      <div hidden$="{{dayTask.IsCompleted}}">
+        <paper-checkbox name="iscompleted" checked="{{dayTask.IsCompleted}}" on-change="_completeChanged">
+        </paper-checkbox>
+        <paper-textarea id="notetext" type="text" placeholder="To-do..." value="{{dayTask.Details.text::input}}" on-change="_textChanged"
+          on-blur="_blur" no-label-float></paper-textarea>
+      </div>
+    </div>
+
+  </template>
+
+  <script>
+    class ElementToDo extends Polymer.Element {
+      static get is() { return 'element-to-do'; }
+
+      static get properties() {
+        return {
+          dayTask: {
+            type: Object,
+          },
+        };
+      }
+    }
+
+    window.customElements.define(ElementToDo.is, ElementToDo);
+  </script>
+</dom-module>

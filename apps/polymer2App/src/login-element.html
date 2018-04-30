@@ -1,0 +1,115 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="login-element">
+  <template>
+    <style include="shared-style">
+      :host {
+        display: block;
+        position: relative;
+      }
+
+      
+
+    </style>
+    
+    <div class="container">
+      <paper-button on-tap="_login">Login</paper-button>
+      <paper-button on-tap="_testToken">Test token</paper-button>
+      <paper-button on-tap="_pang">Pang</paper-button>
+    </div>
+
+  </template>
+
+  <script>
+    class LoginElement extends ActionsMixin(Polymer.Element) {
+      static get is() { return 'login-element'; }
+
+      static get properties() {
+        return {
+          
+          refreshToken: {
+            type: String,
+            value: true
+          }
+
+        };
+      }
+
+      _login() {
+        var _url = "https://jotdown.today/accesstoken?redirectUrl=" + window.location.origin;
+        if (window.location.hostname == "localhost"){
+          _url = "http://localhost:8080/accesstoken?redirectUrl=" + window.location.origin;
+        } 
+        var win         =   window.open(_url, "windowname1", 'width=800, height=600'); 
+        var self= this;
+            var pollTimer   =   window.setInterval(function() { 
+                try {
+                    console.log(win.document.URL);
+                    if (win.document.URL.indexOf("?token") != -1) {
+                        window.clearInterval(pollTimer);
+                        var token = self._getParameterByName("token", win.document.URL);
+                        self._useToken(token);
+                        win.close();
+                    }
+                } catch(e) {
+                  console.log(e);
+                }
+            }, 100);
+      }
+
+      _testToken() {
+        this._useToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MTY2MDQyNjcsIm5hbWVzcGFjZSI6ImFnaGtaWFotVG05dVpYSVZDeElJUVhCd1ZYTmxjbk1ZZ0lDQWdJRGdsd29NIiwidG9rZW50eXBlIjoiYWNjZXNzLXRva2VuIiwidXNlcm5hbWUiOiJ0ZXN0QGV4YW1wbGUuY29tIn0.4o6m3S_DRvzCbMTFfWg7KnDEszg2NXntmYK5WVhfMQY");
+      }
+
+      _pang(){
+        mockAPI.pang("helloish");
+      }
+
+
+      _useToken(token) {
+        console.log(token);
+        var self = this;
+        // get the refresh and request tokens
+        fetch('http://localhost:8080/api/v1/request_token', {
+          method: 'POST',
+          body: JSON.stringify({token: token})
+        }).then(function(response){
+          return response.json();
+        }).then(function(data){
+          console.log(data);
+          // save the tokens
+          //mockAPI.tokens = data;
+          //self.actions.setTokens(data);
+          self.setTokens(data);
+        });
+        // send the logged in message to store the tokens
+
+      }
+
+      _getParameterByName(name, url) {
+          if (!url) url = window.location.href;
+          name = name.replace(/[\[\]]/g, "\\$&");
+          var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+              results = regex.exec(url);
+          if (!results) return null;
+          if (!results[2]) return '';
+          return decodeURIComponent(results[2].replace(/\+/g, " "));
+      }
+
+    }
+
+    window.customElements.define(LoginElement.is, LoginElement);
+  </script>
+</dom-module>

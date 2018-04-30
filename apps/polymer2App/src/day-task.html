@@ -1,0 +1,208 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/moment-element/moment-element.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/iron-overlay-behavior/iron-overlay-backdrop.html">
+<link rel="import" href="../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="element-to-do.html">
+<link rel="import" href="element-note.html">
+<link rel="import" href="redux-store.html">
+<link rel="import" href="my-icons.html">
+
+<dom-module id="day-task">
+  <template>
+    <style include="shared-style">
+      :host {
+        display: block;
+        position: relative;
+      }
+
+      div.container {
+        display: flex;
+        position:relative;
+      }
+
+      div.actioned {
+        position: absolute;
+        top: 6px;
+        left: -4px;
+        color: lightgray
+      }
+
+      div.content {
+        flex: 1;
+        padding: 0;
+        margin: 0 0 0 10px;
+      }
+
+      hr.menu-splitter{
+        min-width: 200px;
+        margin: 5px;
+      }
+
+      label.menu-label {
+        font-size: 10px;
+        color: gray;
+        font-weight: normal;
+        padding: 5px;
+      }
+
+      paper-menu-button {
+        padding: 0;
+      }
+
+    </style>
+    
+    <div class="container">
+      <div class="content">
+        <template is="dom-if" if="[[isToDo]]">
+          <element-to-do day-task="[[dayTask]]"></element-todo>
+        </template>
+        <template is="dom-if" if="[[isNote]]">
+          <element-note day-task="[[dayTask]]" on-save-day-task="_onSaveDayTask"></element-note>
+        </template>
+        <template is="dom-if" if="[[isMeeting]]">
+          <element-meeting day-task="[[dayTask]]"></element-meeting>
+        </template>
+      </div>
+      <div class="actioned" hidden$="[[!dayTask.IsActioned]]">
+        <iron-icon icon="my-icons:chevron-right"></iron-icon>
+      </div>
+      <div class="actions">
+        <paper-menu-button close-on-activate horizontal-align="right">
+          <paper-icon-button icon="my-icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
+          <paper-listbox slot="dropdown-content">
+            <paper-item on-tap="_onComment" hidden$="{{!dayTask.IsCompleted}}">Add comment</paper-item>
+            <paper-item on-tap="_onDelete" hidden$="{{dayTask.IsCompleted}}">Delete</paper-item>
+            <paper-item on-tap="_onDoLater" hidden$="{{!canShowLater}}">Do later</paper-item>
+            <paper-item on-tap="_onDoToday" hidden$="{{!canShowToday}}">Do today</paper-item>
+            <paper-item on-tap="_onReOpen" hidden$="{{!dayTask.CanReopen}}">Re-open</paper-item>
+            <hr class="menu-splitter" />
+            <label class="menu-label">Change to</label>
+            <paper-item on-tap="_onChangeToToDo" hidden$="[[isToDo]]">
+              <paper-icon-item >
+                <iron-icon icon="my-icons:check-box" item-icon></iron-icon>
+                <span>To-do</span>
+              </paper-icon-item>
+            </paper-item> 
+            <paper-item on-tap="_onChangeToNote" hidden$="[[isNote]]">
+                <paper-icon-item >
+                    <iron-icon icon="my-icons:speaker-notes" item-icon></iron-icon>
+                    <span>Note</span>
+                  </paper-icon-item>
+            </paper-item>
+          </paper-listbox>
+        </paper-menu-button>
+      </div>
+    </div>
+
+  </template>
+
+  <script>
+    class DayTask extends ActionsMixin(Polymer.Element) {
+      static get is() { return 'day-task'; }
+
+      static get properties() {
+        return {
+          selectedDayAsInt: {
+            type: Number,
+            statePath: 'selectedDayAsInt',
+          },
+          bookID: {
+            type:String,
+            statePath: 'bookID'
+          },
+          todayAsInt: {
+            type: Number,
+            statePath: 'todayAsInt',
+            observer: '_todayAsIntChanged',
+          },
+          dayTask: {
+            type: Object,
+            observer: '_dayTaskChanged',
+          },
+          isToDo: {
+            type: Boolean,
+            value: false
+          },
+          isNote: {
+            type: Boolean,
+            value: false
+          },
+          isMeeting: {
+            type: Boolean,
+            value: false
+          },
+          canComment: {
+            type: Boolean,
+            value: true
+          }
+        };
+      }
+
+      _dayTaskChanged() {
+        //console.log('_dayTaskChanged', this.dayTask, this.todayAsInt, this.selectedDayAsInt);
+        this.isToDo = this.dayTask.ElementName == 'element-to-do';
+        this.isNote = this.dayTask.ElementName == 'element-note';
+        this.isMeeting = this.dayTask.ElementName == 'element-meeting';
+        this.canShowLater = !this.dayTask.IsActioned && !this.dayTask.IsCompleted;
+        this.canShowToday = !this.dayTask.IsCompleted && this.todayAsInt && this.dayTask.DateAsInt.toString() !== this.todayAsInt.toString();
+      }
+
+      _todayAsIntChanged() {
+        //console.log('_todayAsIntChanged', this.todayAsInt);
+        this.canShowToday = this.dayTask && !this.dayTask.IsCompleted && this.todayAsInt && this.dayTask.DateAsInt.toString() !== this.todayAsInt.toString();
+      }
+
+      _onSaveDayTask(e){
+        console.log('_onSaveDayTask', e.detail);
+        this.updateDayTask(e.detail);
+      }
+
+      _onComment() {
+
+      }
+
+      _onDelete() {
+        console.log('_onDelete');
+      }
+
+      _onDoLater() {
+
+      }
+
+      _doToday() {
+
+      }
+
+      _onReOpen() {
+
+      }
+
+      _onChangeToToDo(e){
+        this.updateDayTask(e.detail);
+        //this.changeType(e.detail, 'element-to-do');
+      }
+      _onChangeToNote(e){
+        this.changeType(e.detail, 'element-note');
+      }
+    }
+
+    window.customElements.define(DayTask.is, DayTask);
+  </script>
+</dom-module>

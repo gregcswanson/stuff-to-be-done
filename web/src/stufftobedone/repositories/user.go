@@ -1,11 +1,12 @@
 package repositories
 
 import (
-	"appengine"
-	"appengine/datastore"
 	"log"
 	"net/http"
 	"stufftobedone/domain"
+
+	"appengine"
+	"appengine/datastore"
 )
 
 type UserRepository struct {

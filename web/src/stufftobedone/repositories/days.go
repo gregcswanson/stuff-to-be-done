@@ -1,12 +1,13 @@
 package repositories
 
 import (
-	"appengine"
-	"appengine/datastore"
 	"errors"
 	"net/http"
 	"strconv"
 	"stufftobedone/domain"
+
+	"appengine"
+	"appengine/datastore"
 )
 
 type DayRepository struct {
@@ -42,6 +43,67 @@ func (r *DayRepository) Day(bookID string, dateAsInt int) ([]domain.Day, error) 
 	}
 
 	return days, nil
+}
+
+func (r *DayRepository) DayWithTaskIds(bookID string, dateAsInt int) ([]domain.Day, []string, error) {
+	days := []domain.Day{}
+	taskIds := []string{}
+	globalContext := appengine.NewContext(r.request)
+
+	// filter Days where not current scheduled, is not part of a project and is not completed
+	//q := datastore.NewQuery("Days").Filter("DateAsInt = ", dateAsInt).Filter("IsActioned = ", false).Order("Created")
+	q := datastore.NewQuery("Days").Filter("DateAsInt = ", dateAsInt).Order("-Created")
+
+	// link the day to the book
+	bookKey := datastore.NewKey(globalContext, "Books", bookID, 0, nil)
+	q = q.Ancestor(bookKey)
+
+	keys, err := q.GetAll(globalContext, &days)
+	if err != nil {
+		return days, taskIds, err
+	} else {
+		// loop through and add the keys as ID
+		for i := 0; i < len(keys); i++ {
+			days[i].ID = keys[i].Encode()
+		}
+	}
+
+	// read the task ids into a list
+	for i := 0; i < len(days); i++ {
+		taskIds = append(taskIds, days[i].TaskID)
+	}
+
+	return days, taskIds, nil
+}
+
+func (r *DayRepository) OpenItemsBeforeDayWithTaskIds(bookID string, dateAsInt int) ([]domain.Day, []string, error) {
+	days := []domain.Day{}
+	taskIds := []string{}
+	globalContext := appengine.NewContext(r.request)
+
+	// filter Days where not current scheduled, is not part of a project and is not completed
+	q := datastore.NewQuery("Days").Filter("DateAsInt < ", dateAsInt).Filter("IsActioned = ", false).Filter("IsCompleted = ", false).Order("-DateAsInt").Order("-Created")
+
+	// link the day to the book
+	bookKey := datastore.NewKey(globalContext, "Books", bookID, 0, nil)
+	q = q.Ancestor(bookKey)
+
+	keys, err := q.GetAll(globalContext, &days)
+	if err != nil {
+		return days, taskIds, err
+	} else {
+		// loop through and add the keys as ID
+		for i := 0; i < len(keys); i++ {
+			days[i].ID = keys[i].Encode()
+		}
+	}
+
+	// read the task ids into a list
+	for i := 0; i < len(days); i++ {
+		taskIds = append(taskIds, days[i].TaskID)
+	}
+
+	return days, taskIds, nil
 }
 
 func (r *DayRepository) OpenItemsBeforeDay(bookID string, dateAsInt int) ([]domain.Day, error) {

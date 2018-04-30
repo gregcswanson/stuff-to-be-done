@@ -1,0 +1,44 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/my-app.html",
+  "fragments": [
+    "src/page-active.html",
+    "src/page-history.html",
+    "src/page-404.html"
+  ],
+  "sources": [
+    "src/**/*",
+    "images/**/*"
+  ],
+  "extraDependencies": [
+    "manifest.json",
+    "bower_components/webcomponentsjs/*.js",
+    "node_modules/lodash/lodash.js",
+    "node_modules/redux/dist/redux.js",
+    "node_modules/redux-thunk/dist/redux-thunk.js"
+  ],
+  "lint": {
+    "rules": ["polymer-2"]
+  },
+  "builds": [
+    {
+      "preset": "es5-bundled"
+    },
+    {
+      "preset": "es6-bundled"
+    },
+    {
+      "preset": "es6-unbundled"
+    },
+    {
+      "name": "dev",
+      "bundle": true,
+      "js":{"minify": false, "compile": false},
+      "css":{"minify": false},
+      "html":{"minify": false},
+      "addServiceWorker": false,
+      "addPushManifest": false,
+      "insertPrefetchLinks": false
+    }
+  ]
+}

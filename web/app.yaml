@@ -14,10 +14,10 @@ handlers:
   upload: public/ssl/acme-challenge/.*
   application_readable: true
   
-- url: /bower_components
+- url: /xbower_components
   static_dir: bower_components
 
-- url: /customelements
+- url: /xcustomelements
   static_dir: public/elements
 
 - url: /fonts
@@ -25,6 +25,18 @@ handlers:
 
 - url: /img
   static_dir: public/images
+
+- url: /bower_components
+  static_dir: public/app/bower_components
+
+- url: /node_modules
+  static_dir: public/app/node_modules
+
+- url: /images
+  static_dir: public/app/images
+
+- url: /src
+  static_dir: public/app/src
   
 - url: /resources
   static_dir: public/resources
@@ -37,6 +49,21 @@ handlers:
 - url: /app/.*
   script: _go_app
   login: required
+  secure: always
+
+- url: /logout
+  script: _go_app
+  login: optional
+  secure: always
+
+- url: /accesstoken
+  script: _go_app
+  login: required
+  secure: always
+
+- url: /api/.*
+  script: _go_app
+  login: optional
   secure: always
 
 - url: /.*

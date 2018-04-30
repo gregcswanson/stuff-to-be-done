@@ -1,0 +1,65 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/moment-element/moment-element.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="day-task.html">
+<link rel="import" href="redux-store.html">
+
+<dom-module id="day-tasks">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+      
+      p.day-display {
+        text-align: center;
+        display: block;
+        font-size: 12px;
+      }
+
+      .card {
+        padding: 0;
+      }
+
+      day-task {
+        border-bottom: dotted gray 1px;
+      }
+
+    </style>
+
+    <moment-element datetime="[[dayTasks.Display]]" output="{{dayTasks.DisplayFormatted}}" input-format="YYYYMMDD" output-format="dddd Do MMMM, YYYY"></moment-element>
+    <p class="day-display">[[dayTasks.DisplayFormatted]]</p>
+    <div class="card">
+        <template is="dom-repeat" items="[[dayTasks.DayTasks]]">
+          <day-task day-task="[[item]]"></day-task>
+        </template>
+    </div>
+    
+  </template>
+
+  <script>
+    class DayTasks extends ApiMixin(Polymer.Element) {
+      static get is() { return 'day-tasks'; }
+
+      static get properties() {
+        return {
+          dayTasks: {
+            type: Object,
+          },
+        };
+      }
+    }
+
+    window.customElements.define(DayTasks.is, DayTasks);
+  </script>
+</dom-module>

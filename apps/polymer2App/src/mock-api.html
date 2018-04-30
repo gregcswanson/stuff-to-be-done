@@ -1,0 +1,283 @@
+<script>
+
+const mockAPI = { };
+const BASE_API = "http://localhost:8080/api/v1/";
+mockAPI.getLater = function() {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(Object.assign([], dataSample.data));
+        }, 3000);
+    });
+};
+
+mockAPI.getProfile = function() {
+    return mockAPI.get('profile');
+}
+
+mockAPI.getActive = function() {
+    var todayAsInt = store.getState().todayAsInt;
+    return mockAPI.get('active?date=' + todayAsInt);
+};
+
+mockAPI.add = function(dayTask) {
+    // prepare the task
+    dayTask.Data = JSON.stringify(dayTask.Details);
+    return mockAPI.post('daytasks', dayTask);
+};
+
+mockAPI.update = function(dayTask) {
+    // prepare the task
+    dayTask.Data = JSON.stringify(dayTask.Details);
+    return mockAPI.put('daytasks', dayTask);
+};
+
+mockAPI.getTokens = function() {
+    return store.getState().tokens;
+}
+
+mockAPI.pang = function(message) {
+    var request_token = mockAPI.getTokens().request_token;
+    fetch(BASE_API + 'pang', {
+          method: 'GET',
+         headers: {
+             "Authorization": request_token 
+         }
+        }).then(function(response){
+          return response.json();
+        }).then(function(data){
+          console.log('pang',  data);
+        });
+}
+
+mockAPI.get = function(endpoint) {
+    // fetch
+    return new Promise((resolve, reject) => {
+        var request_token = mockAPI.getTokens().request_token;
+        fetch(BASE_API + endpoint, {
+            method: 'GET',
+            headers: {
+             "Authorization": request_token 
+         }
+        }).then(function(response){
+            if(response.status !== 200) {
+                console.log('fecth error response ' + endpoint, response.status);
+                reject(response.status);
+            }
+            console.log('response ' + endpoint, response);
+            response.json().then(function(data){
+                resolve(data);
+                //return response.json();
+            });
+            //
+        })
+        .catch(function(err){
+             // on error, if this is an expired token try and get a new token
+             // failed token - send logout
+             // success token - try again
+            console.log('fetch error ' + endpoint,  err);
+            reject(err);
+        }); //.then(function(data){
+            //console.log('pang',  data);
+            //resolve(Object.assign([], dataSample.data));
+        //});
+       // setTimeout(() => {
+        //    
+        //}, 1000);
+    });
+    
+   
+
+    // retry
+}
+
+mockAPI.post = function(endpoint, data) {
+    // fetch
+    return new Promise((resolve, reject) => {
+        var request_token = mockAPI.getTokens().request_token;
+        fetch(BASE_API + endpoint, {
+            method: 'POST',
+            headers: {
+             "Authorization": request_token
+         },
+             body: JSON.stringify(data)
+        }).then(function(response){
+            if(response.status !== 200) {
+                console.log('fecth error response ' + endpoint, response.status);
+                reject(response.status);
+            }
+            console.log('response ' + endpoint, response);
+            response.json().then(function(data){
+                resolve(data);
+                //return response.json();
+            });
+            //
+        })
+        .catch(function(err){
+             // on error, if this is an expired token try and get a new token
+             // failed token - send logout
+             // success token - try again
+            console.log('fetch error ' + endpoint,  err);
+            reject(err);
+        }); //.then(function(data){
+            //console.log('pang',  data);
+            //resolve(Object.assign([], dataSample.data));
+        //});
+       // setTimeout(() => {
+        //    
+        //}, 1000);
+    });
+   
+}
+
+mockAPI.put = function(endpoint, data) {
+    // fetch
+    return new Promise((resolve, reject) => {
+        var request_token = mockAPI.getTokens().request_token;
+        fetch(BASE_API + endpoint, {
+            method: 'PUT',
+            headers: {
+             "Authorization": request_token
+         },
+             body: JSON.stringify(data)
+        }).then(function(response){
+            if(response.status !== 200) {
+                console.log('fecth error response ' + endpoint, response.status);
+                reject(response.status);
+            }
+            console.log('response ' + endpoint, response);
+            response.json().then(function(data){
+                resolve(data);
+                //return response.json();
+            });
+            //
+        })
+        .catch(function(err){
+             // on error, if this is an expired token try and get a new token
+             // failed token - send logout
+             // success token - try again
+            console.log('fetch error ' + endpoint,  err);
+            reject(err);
+        }); //.then(function(data){
+            //console.log('pang',  data);
+            //resolve(Object.assign([], dataSample.data));
+        //});
+       // setTimeout(() => {
+        //    
+        //}, 1000);
+    });
+   
+}
+
+mockAPI.createElement = function(elementName, selectedDayAsInt, text){
+    var selectedDayAsInt = store.getState().selectedDayAsInt;
+    var bookId = store.getState().profile.bookId;
+    var clientId = generateID("task").toString();
+    return new Promise((resolve, reject) => { 
+        resolve({
+            "DayID":"",
+            "TaskID":"",
+            "ClientID": clientId,
+            "BookID": bookId,
+            "Details": {
+                "text": text,
+                "status":"OPEN",
+                "version":1
+            },
+            "ElementName": elementName,
+            "ProjectID":"",
+            "Search":"",
+            "DateAsInt": selectedDayAsInt,
+            "IsCompleted":false,
+            "IsActioned":false,
+            "Created":"2017-11-13T22:22:05.026282Z",
+            "CanReopen":false,
+            "Tags":"",
+            "Comment":""
+        });  
+    });
+};
+
+var generateID = (function() {
+    var globalIdCounter = 0;
+    return function(baseStr) {
+        return (baseStr + globalIdCounter++);
+    }
+})();
+
+var dataSample = {
+    "data":
+        [{
+            "DateAsInt":20171114,
+            "Display":"20171114",
+            "DayTasks":[
+                {
+                    "DayID":"a",
+                    "TaskID":"a1",
+                    "BookID":"b",
+                    "Details": {
+                        "text":"Plan and scope next front end platform",
+                        "status":"OPEN",
+                        "version":1
+                    },
+                    "ElementName":"element-to-do",
+                    "ProjectID":"",
+                    "Search":"",
+                    "DateAsInt":20171114,
+                    "IsCompleted":false,
+                    "IsActioned":false,
+                    "Created":"2017-11-13T22:22:05.026282Z",
+                    "CanReopen":false,
+                    "Tags":"",
+                    "Comment":"Added Yammer post, started word document"
+                    }
+                ]
+            },
+            {
+                "DateAsInt":20171113,
+                "Display":"20171113",
+                "DayTasks":[
+                    {
+                        "DayID":"b",
+                        "TaskID":"b1",
+                        "BookID":"b",
+                        "Details": {
+                            "text": "Scoping document for forecasting",
+                            "status":"OPEN",
+                            "version":3
+                        },
+                        "ElementName":"element-to-do",
+                        "ProjectID":"",
+                        "Search":"",
+                        "DateAsInt":20171113,
+                        "IsCompleted":false,
+                        "IsActioned":true,
+                        "Created":"2017-11-13T00:41:04.191479Z",
+                        "CanReopen":false,
+                        "Tags":"",
+                        "Comment":""
+                    },
+                    {
+                        "DayID":"n",
+                        "TaskID":"n1",
+                        "BookID":"b",
+                        "Details": {
+                            "text": "A note",
+                            "status":"OPEN",
+                            "version":3
+                        },
+                        "ElementName":"element-note",
+                        "ProjectID":"",
+                        "Search":"",
+                        "DateAsInt":20171113,
+                        "IsCompleted":false,
+                        "IsActioned":true,
+                        "Created":"2017-11-13T00:50:04.191479Z",
+                        "CanReopen":false,
+                        "Tags":"",
+                        "Comment":""
+                    }
+                ]
+            }    
+        ]
+    };
+</script>

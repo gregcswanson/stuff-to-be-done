@@ -13,14 +13,16 @@ type DayTask struct {
 	Data        string
 	ElementName string
 	ProjectID   string
-	Search		string
+	Search      string
 	DateAsInt   int
 	IsCompleted bool
 	IsActioned  bool
+	IsDeleted   bool
 	Created     time.Time
 	CanReopen   bool
 	Tags        string
 	Comment     string // a comment for the day
+	ClientID    string // from the client to track offline new items saved
 }
 
 func (t *DayTask) Build(day Day, task Task) {
@@ -34,6 +36,7 @@ func (t *DayTask) Build(day Day, task Task) {
 	t.Search = task.Search
 	t.DateAsInt = day.DateAsInt
 	t.IsCompleted = day.IsCompleted
+	t.IsDeleted = task.IsDeleted
 	t.IsActioned = day.IsActioned
 	t.Created = day.Created
 	t.Tags = day.Tags
@@ -54,6 +57,7 @@ func (t *DayTask) BuildTask(task Task) {
 	t.Search = task.Search
 	t.DateAsInt = 0
 	t.IsCompleted = task.IsCompleted
+	t.IsDeleted = task.IsDeleted
 	t.Created = task.Created
 	t.Tags = task.Tags
 	t.Comment = ""

@@ -1,0 +1,66 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="my-icons.html">
+<link rel="import" href="redux-store.html">
+
+<dom-module id="quick-add">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        position: relative;
+      }
+      
+      .card {
+        padding: 5px;
+      }
+
+    </style>
+
+    <div class="card">
+      <paper-textarea id="text" type="text" placeholder="Quick note..." 
+        value="{{text::input}}" on-change="_textChanged"
+          on-blur="_blur" no-label-float>
+        </paper-textarea>
+        <paper-button elevation="1" on-tap="_onAdd">
+          Add
+      </paper-button>
+    </div>
+
+    
+  </template>
+
+  <script>
+    class QuickAdd extends ActionsMixin(Polymer.Element) {
+      static get is() { return 'quick-add'; }
+
+      static get properties() {
+        return {
+          dayAsInt:{
+            type: Number,
+          },
+          text: {
+            type: String
+          }
+        };
+      }
+
+      _onAdd() {
+        this.addElement('element-note', this.selectedDayAsInt, this.text, this.text.length !== 0);
+        this.text = "";
+      }
+
+    }
+
+    window.customElements.define(QuickAdd.is, QuickAdd);
+  </script>
+</dom-module>

@@ -1,0 +1,175 @@
+<link rel="import" href="../bower_components/polymer-redux/polymer-redux.html">
+<link rel="import" href="date-functions.html">
+<script>
+    const initialState = {
+        bookID: 'book id',
+        books: [{id: "1", name: "default", isSelected: true, isDefault: true}],
+        isLoggingIn: false,
+        isLoggedIn: false,
+        isLoading: false,
+        token: [],
+        todayAsInt: 0,
+        selectedDayAsInt: 0,
+        laterItemsCount: 0,
+        items: [],
+        trash: [],
+        later: [],
+        historyDayAsInt: 0,
+        history: [],
+        requestToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MTY4MjgxMzIsIm5hbWVzcGFjZSI6ImFnaGtaWFotVG05dVpYSVZDeElJUVhCd1ZYTmxjbk1ZZ0lDQWdJRGdsd29NIiwidG9rZW50eXBlIjoicmVxdWVzdC10b2tlbiIsInVzZXJuYW1lIjoidGVzdEBleGFtcGxlLmNvbSJ9.IC0Tu_hsjZBFAGokB2X5GDX50s2X17DBaVvH509tOXs",
+        refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MTg4MTUzMzIsIm5hbWVzcGFjZSI6ImFnaGtaWFotVG05dVpYSVZDeElJUVhCd1ZYTmxjbk1ZZ0lDQWdJRGdsd29NIiwidG9rZW50eXBlIjoicmVmcmVzaC10b2tlbiIsInVzZXJuYW1lIjoidGVzdEBleGFtcGxlLmNvbSJ9.SDinNpRbws3caUM0sziv7U8nU6zFHLEGoyMsyGKx5GM"
+    };
+    // save request and refresh to persistant storage
+
+    const reducer = (state, action) => {
+        if (!state) {
+            // get from local storage
+            initialState.todayAsInt = dateFunctions.todayAsInt();
+            initialState.selectedDayAsInt = dateFunctions.todayAsInt();
+            
+            console.log('reading inital state', initialState);
+
+            return initialState;
+        }
+        switch(action.type){
+            case 'ADD_ELEMENT':
+                var items = [...state.items];
+                // find the current day, or add it
+                var day = items.find(function (f) { return f.DateAsInt == action.item.DateAsInt });
+                if (!day) {
+                    day = { DateAsInt: action.item.DateAsInt, Display: action.item.DateAsInt.toString(), DayTasks: []}
+                    items.splice(0, 0, day);
+                }
+                day.DayTasks.splice(0,0, action.item);
+                var newItems = JSON.parse(JSON.stringify(items));
+                return Object.assign({}, state, { items: newItems });
+            case 'SELECT_DATE':
+                return Object.assign({}, state, { selectedDayAsInt: action.seletedDayAsInt });
+            case 'SET_TODAY':
+                return Object.assign({}, state, { todayAsInt: action.todayAsInt });
+            return (Object.assign({}, state, {isLoggingIn: true, isLoggedIn: false}));
+            case 'LOGIN_STARTED':
+                return (Object.assign({}, state, {isLoggingIn: true, isLoggedIn: false}));
+            case 'LOGIN_COMPLETED':
+                return (Object.assign({}, state, {isLoggingIn: false, isLoggedIn: true}));
+            case 'LOGOUT_SUCCESS':
+                return (Object.assign({}, state, {isLoggedIn: false, active: [], later: []}));
+            case 'LOAD_LATER_STARTED':
+                return (Object.assign({}, state, { later: [], isLoading: true }));
+            case 'LOAD_LATER_COMPLETED':
+                var newState = Object.assign({}, state, { later: action.items, isLoading: false });
+                console.log(action.type, newState);
+                return newState;
+            case 'LOAD_ACTIVE_STARTED':
+                return (Object.assign({}, state, { items: [], isLoading: true }));
+            case 'LOAD_ACTIVE_COMPLETED':
+                var newState = Object.assign({}, state, { items: action.items, isLoading: false });
+                console.log(action.type, newState);
+                return newState;
+        }
+    };
+
+    const store = Redux.createStore(
+        reducer,
+        Redux.applyMiddleware(ReduxThunk.default)
+    );
+    const ReduxMixin = PolymerRedux(store);
+    ActionsMixin = Parent => class ActionsMixin extends ReduxMixin(Parent) {
+        static get actions() {
+            return {
+                addElement(item) {
+                    return {
+                        type: 'ADD_ELEMENT',
+                        item
+                    }
+                },
+                loginStarted() {
+                    return {
+                        type: 'LOGIN_STARTED'
+                    }
+                },
+                loginCompleted() {
+                    return {
+                        type: 'LOGIN_COMPLETED'
+                    }
+                },
+                loadLaterStarted() {
+                    return {
+                        type: 'LOAD_LATER_STARTED'
+                    }
+                },
+                loadLaterCompleted(items) {
+                    return {
+                        type: 'LOAD_LATER_COMPLETED',
+                        items
+                    }
+                },
+                loadActiveStarted() {
+                    return {
+                        type: 'LOAD_ACTIVE_STARTED',
+                    }
+                },
+                loadActiveCompleted(items) {
+                    return {
+                        type: 'LOAD_ACTIVE_COMPLETED',
+                        items
+                    }
+                }
+            }
+        }
+        addElement(elementName, selectedDayAsInt) {
+            this.dispatch((dispatch) => {
+                mockAPI.createElement(elementName, selectedDayAsInt).then(function(data){
+                    dispatch('addElement', data);
+                });
+            });
+        }
+        loadActive() {
+            this.dispatch((dispatch) => {
+                dispatch('loadActiveStarted');
+                mockAPI.getActive().then(function(data){
+                    dispatch('loadActiveCompleted', data);
+                });
+            });
+        }
+    };
+    ApiMixin = Parent => class ApiMixin extends ActionsMixin(Parent) {
+        loginAsync() {
+            this.dispatch((dispatch) => {
+                dispatch('loginStarted', 'This is also MAGIC!');
+                setTimeout(function(){
+                            dispatch('loginCompleted', '');
+                }, 1000);
+            });
+        }
+
+        loadLaterItems() {
+            this.dispatch((dispatch) => {
+            console.log('load laster items');
+                dispatch('loadLaterStarted');
+                
+                setTimeout(function(){
+                    console.log('load laster items async');
+                    dispatch('loadLaterCompleted', [{test: "ok"}, {test: "no"}]);
+                }, 2000);
+            });
+        }
+    };
+    
+
+    /*const ActionsMixin = Parent => class ActionsMixin extends ReduxMixin(Parent) {
+        static get actions() {
+            return {
+                loginWithTimeout: function(){
+                    return function(dispatch) {
+                        dispatch({ type: 'LOGIN_STARTED'});
+                        setTimeout(function(){
+                            dispatch({ type: 'LOGIN_COMPLETED'});
+                        }, 500);
+                    }
+                }
+            }
+        }
+    };*/
+    
+</script>

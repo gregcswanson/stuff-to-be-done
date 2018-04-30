@@ -1,0 +1,84 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="my-icons.html">
+<link rel="import" href="redux-store.html">
+
+<dom-module id="add-element">
+  <template>
+    <style include="shared-style">
+      :host {
+        display: block;
+        position: relative;
+      }
+      
+
+    </style>
+
+        <paper-menu-button
+          close-on-activate
+          horizontal-align="right"
+          vertical-align="bottom">
+            <paper-fab icon="my-icons:add" slot="dropdown-trigger"></paper-fab>
+            <paper-listbox slot="dropdown-content">
+                <paper-item on-tap="_onAddToDo">
+                  <paper-icon-item >
+                    <iron-icon icon="my-icons:check-box" item-icon></iron-icon>
+                    <span>To-do</span>
+                  </paper-icon-item>
+                </paper-item> 
+              <paper-item on-tap="_onAddNote">
+                  <paper-icon-item >
+                      <iron-icon icon="my-icons:speaker-notes" item-icon></iron-icon>
+                      <span>Note</span>
+                    </paper-icon-item>
+              </paper-item>
+              <paper-item on-tap="_onAddMeeting">
+                  <paper-icon-item >
+                      <iron-icon icon="my-icons:people" item-icon></iron-icon>
+                      <span>Meeting</span>
+                    </paper-icon-item>
+              </paper-item>
+              <!--<paper-item on-tap="_onAddElement">Sketch</paper-item>
+              <paper-item on-tap="_onAddElement">Speaker Note</paper-item>-->
+            </paper-listbox>
+          </paper-menu-button>
+    
+  </template>
+
+  <script>
+    class AddElement extends ActionsMixin(Polymer.Element) {
+      static get is() { return 'add-element'; }
+
+      static get properties() {
+        return {
+          selectedDayAsInt:{
+            type: Number,
+            statePath: 'selectedDayAsInt'
+          }
+        };
+      }
+
+      _onAddToDo () {
+        this.addElement('element-to-do', this.selectedDayAsInt, "", false);
+      }
+      _onAddMeeting () {
+        this.addElement('element-meeting', this.selectedDayAsInt, "", false);
+      }
+      _onAddNote () {
+        this.addElement('element-note', this.selectedDayAsInt, "", false);
+      }
+
+    }
+
+    window.customElements.define(AddElement.is, AddElement);
+  </script>
+</dom-module>

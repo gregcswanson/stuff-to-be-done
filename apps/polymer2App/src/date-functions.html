@@ -1,0 +1,32 @@
+<script>
+
+const dateFunctions = {};
+
+dateFunctions.todayAsInt = function(){
+    return dateFunctions.dateToInt(new Date());
+};
+
+dateFunctions.dateAddDays = function(date, days) {
+    var result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+};
+
+dateFunctions.dateIntToDate = function(dateAsInt) {
+    var yearPart = parseInt(dateAsInt.toString().substring(0,4));
+    var monthPart = parseInt(dateAsInt.toString().substring(4,6));
+    var dayPart = parseInt(dateAsInt.toString().substring(6,8));
+    return new Date(yearPart, Math.floor(monthPart) - 1, dayPart);
+};
+
+dateFunctions.dateToInt = function (date) {
+    if (!date) return 0;
+    var result = date.getFullYear().toString();
+    if (date.getMonth() + 1 < 10) result += "0";
+    result += (date.getMonth() + 1).toString();
+    if (date.getDate() < 10) result += "0";
+    result += date.getDate().toString();
+    return parseInt(result);
+};
+
+</script>

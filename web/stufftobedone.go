@@ -1,38 +1,43 @@
 package stufftobedone
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"stufftobedone/handlers"
 	"stufftobedone/middleware"
+	"stufftobedone/routes"
+
+	"github.com/gin-gonic/gin"
 	//"log"
 )
 
 func init() {
+	routes.SetupRoutes()
+}
+
+func init2() {
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/**/*")
 	r.Use(middleware.SharedDataMiddleWare())
 	r.Use(middleware.UserMiddleware())
 	r.NoRoute(handlers.FourZeroFourHandler)
 
-	
-	r.GET("/authenticate", handlers.AuthenticateHandler) 
-	r.GET("/authorized", handlers.AuthorizedHandler) 
-	r.GET("/api/v1/internal/register", handlers.RegisterHandler) 
-	r.GET("/api/v1/internal/ping", handlers.PingHandler) 
+	r.GET("/authenticate", handlers.AuthenticateHandler)
+	r.GET("/authorized", handlers.AuthorizedHandler)
+	r.GET("/api/v1/internal/register", handlers.RegisterHandler)
+	r.GET("/api/v1/internal/ping", handlers.PingHandler)
 	/*
-	apiV1internal := r.Group("/api/v1/internal")
-	{
-		// TO DO - set a custom shared variable using middleware so that the 404 returns an api error
-		apiV1internal.POST("/register", handlers.RegisterHandler)
-		//apiV1internal.GET("/ping", handlers.PingHandler)
-		apiV1internal.GET("/auth", handlers.ProfileApiHandler)
-		
-	}*/
+		apiV1internal := r.Group("/api/v1/internal")
+		{
+			// TO DO - set a custom shared variable using middleware so that the 404 returns an api error
+			apiV1internal.POST("/register", handlers.RegisterHandler)
+			//apiV1internal.GET("/ping", handlers.PingHandler)
+			apiV1internal.GET("/auth", handlers.ProfileApiHandler)
+
+		}*/
 
 	apiV1book := r.Group("/api/v1/book/:bookId")
 	{
-		
+
 		// add a middleware to setup the book context
 		apiV1book.GET("/elements", handlers.BookElementsHandler)
 		// later actions
@@ -62,7 +67,6 @@ func init() {
 
 	}
 
-	
 	r.GET("/app/book", handlers.BookIndexsHandler) // will redirect to the default book for the user
 	book := r.Group("/app/book/:book")
 	{

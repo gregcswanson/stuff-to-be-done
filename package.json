@@ -1,0 +1,27 @@
+{
+  "name": "stuff-to-be-done",
+  "version": "1.0.0",
+  "description": "framework for doing stuff",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-pwa-dev": "polymer build --name dev --root apps/polymer2app",
+    "run-pwa-dev": "polymer serve --root apps/polymer2app",
+    "copypwa": "node ./copy-pwa-to-site.js",
+    "dev": "dev_appserver.py web/app.yaml"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gregcswanson/stuff-to-be-done.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gregcswanson/stuff-to-be-done/issues"
+  },
+  "homepage": "https://github.com/gregcswanson/stuff-to-be-done#readme",
+  "dependencies": {
+    "copyfiles": "^1.2.0",
+    "fs-extra": "^5.0.0"
+  }
+}
